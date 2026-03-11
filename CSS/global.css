@@ -1,0 +1,91 @@
+/* ==========================================================
+   CHAIR OR DIE - GLOBAL STYLE (Version Fixée)
+   ========================================================== */
+
+:root {
+    --bleu-roi: #1A3B70;
+    --orange-pastel: #F4A261;
+    --jaune-solaire: #E9C46A;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--bleu-roi); 
+    color: #FFFFFF;
+    font-family: Arial, sans-serif;
+    
+    /* CORRECTIF SCROLL : */
+    overflow-x: hidden; /* Empêche le scroll horizontal dû à la rotation */
+    overflow-y: auto;   /* Autorise le scroll vertical pour le Wiki et le contenu */
+    
+    cursor: url('../Image/chair-cursor.png') 16 16, 
+           url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%23E9C46A'><path d='M7 11V3h10v8h3l-2 9H6l-2-9h3zm2-6v5h6V5H9zm0 13h6l1.11-5H7.89L9 18z'/></svg>") 16 16, 
+           auto;
+}
+
+/* LE FOND TOURNANT (SUNBURST) */
+body::after {
+    content: "";
+    position: fixed;
+    width: 200vmax;
+    height: 200vmax;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -2;
+    
+    background-image: 
+        repeating-conic-gradient(
+            from 0deg,
+            rgba(233, 197, 106, 0.12) 0deg 15deg, /* Jaune Solaire [cite: 128] */
+            rgba(244, 162, 97, 0.09) 15deg 30deg  /* Orange Pastel [cite: 128] */
+        );
+    
+    animation: rotateSun 60s linear infinite;
+    pointer-events: none; /* Ne bloque pas les clics sur le contenu */
+}
+
+/* LÉGER GRAIN RÉTRO */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+    z-index: -1;
+}
+
+@keyframes rotateSun {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+/* UI & INTERACTIONS */
+a, button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Custom Scrollbar pour rester dans le thème */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bleu-roi);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--jaune-solaire);
+    border-radius: 5px;
+}

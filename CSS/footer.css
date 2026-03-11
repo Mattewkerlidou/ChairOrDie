@@ -1,15 +1,22 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-footer{
-    background-color: #181818;
+footer {
+    background-color: #1A3B70; /* Bleu Roi  */
     color: #FFFFFF;
     text-align: center;
-    padding: 10px;
-    margin: 0 auto;
-    margin-bottom: 20px;
-    width: 90%;
-    border-radius: 15px;
+    padding: 20px 0;
+    margin-top: 50px;
+    border-top: 4px solid #E9C46A; /* Rappel du Jaune Solaire  */
+    width: 100%;
+}
+
+footer p {
+    margin: 5px 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Mise en avant des noms de l'équipe */
+footer p:last-child {
+    color: #F4A261; /* Orange Pastel pour les auteurs  */
+    font-weight: bold;
+    letter-spacing: 1px;
 }

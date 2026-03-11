@@ -1,42 +1,48 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 header {
-    background-color: #181818;
+    background-color: #1A3B70; /* Bleu Roi officiel  */
     color: #FFFFFF;
-    text-align: center;
-    padding: 20px;
+    padding: 10px 5%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 15px;
-    margin: 0 auto;
-    margin-top: 20px;
-    width: 90%;
-    
-
+    justify-content: space-between; /* Logo à gauche, liens à droite */
+    border-bottom: 4px solid #E9C46A; /* Accent Jaune Solaire  */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    position: sticky; /* Reste visible en haut lors du scroll */
+    top: 0;
+    z-index: 1000;
 }
+
+nav {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
 nav a {
     color: #FFFFFF;
     text-decoration: none;
-    margin: 0 15px;
-    font-size: 30px;
-    padding: 5px 10px 5px 10px ;
-    border-radius: 10px;
-    display: inline-block;
-    align-items: center;
-    justify-content: center;
-}
-nav img {
-    width: 100px;
-    height: 100px;
-    vertical-align: middle;
-}
-nav a:hover {
-    background-color: rgb(39, 39, 39);
-    transform: scale(1.05);
+    font-weight: bold;
+    font-size: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
     transition: all 0.3s ease;
-    
+    text-transform: uppercase;
+}
+
+nav img {
+    width: 60px; /* Taille plus élégante */
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+/* Effets de survol */
+nav a:hover {
+    color: #1A3B70;
+    background-color: #E9C46A; /* Le bouton devient jaune au survol  */
+    transform: scale(1.1);
+}
+
+nav a img:hover {
+    transform: rotate(-5deg) scale(1.1);
 }

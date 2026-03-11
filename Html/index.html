@@ -1,31 +1,48 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/x-icon" href="../Image/Favicon/favicon_io/favicon.ico">
-		<link rel="stylesheet" href="../CSS/index.css" />
-		<link rel="stylesheet" href="../CSS/navbar.css" />
-		<link rel="stylesheet" href="../CSS/footer.css" />
-		<script src="../JavaScript/script.js"></script>
-	</head>
-	<body>
-		<header>
-			<nav>
-				<a href="index.html"><img src="../Image/logo1-Photoroom.png" alt="logo"></a>
-				<a href="Wiki.html">Wiki</a>
-			</nav>
-		</header>
-		
-		<main>
-			<div class="game">
-				<img src="../Image/logo1-Photoroom.png" alt="">
-				<button onclick="LaunchGame()">Play Game</button>
-			</div>
-		</main>
-		<footer>
-				<p>Copyright © 2026 - Tous droits réservés</p>
-				<p>Made by Mattew, Stéphane, Batiste, Gabriel</p>
+    <head>
+        <meta charset="utf-8" />
+        <title>Chair or Die - Prêt à vous asseoir ?</title>
+        <link rel="icon" type="image/x-icon" href="../Image/Favicon/favicon_io/favicon.ico">
+        
+        <link rel="stylesheet" href="../CSS/global.css"/>   
+        <link rel="stylesheet" href="../CSS/navbar.css" />
+        <link rel="stylesheet" href="../CSS/footer.css" />
+        <link rel="stylesheet" href="../CSS/index.css" />
+        
+        <script src="../JavaScript/script.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <a href="index.html" class="logo-link">
+                    <img src="../Image/logo1-Photoroom.png" alt="logo Chair or Die">
+                </a>
+                <div class="nav-links">
+                    <a href="index.html">Accueil</a>
+                    <a href="Wiki.html">Wiki</a>
+                </div>
+            </nav>
+        </header>
+        
+        <main>
+            <section class="game-launcher">
+                <div class="game-card">
+                    <div class="bg-animated"></div>
 
-		</footer>
-	</body>
+                    <img src="../Image/logo1-Photoroom.png" alt="Logo Chair or Die" class="hero-logo">
+
+                    <div class="action-zone">
+                        <button class="play-btn" onclick="LaunchGame()">Play Game</button>
+                        <span class="slogan">La chaise musicale devient un Battle Royale ! </span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Copyright © 2026 - Tous droits réservés</p>
+            <p>Made by Mattew, Stéphane, Batiste, Gabriel </p>
+        </footer>
+    </body>
 </html>
