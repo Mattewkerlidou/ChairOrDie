@@ -1,0 +1,55 @@
+
+.controller-body {
+    background-color: var(--bleu-roi);
+    touch-action: none; /* Empêche le zoom/scroll accidentel sur mobile */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 100vh;
+}
+
+/* Le Joystick */
+#joystick-container {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#joystick-base {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 4px solid var(--jaune-solaire);
+    border-radius: 50%;
+    position: relative;
+}
+
+#joystick-stick {
+    width: 70px;
+    height: 70px;
+    background: var(--orange-pastel);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+/* Le Bouton SIT */
+.sit-button {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #e74c3c;
+    border: 8px solid #c0392b;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 0 #922b21;
+    active: transform: translateY(5px);
+}

@@ -97,3 +97,14 @@ main {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
     font-style: italic;
 }
+
+
+#bg-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Derrière le logo et le bouton */
+    pointer-events: none; /* Pour pouvoir cliquer sur le bouton à travers le canvas */
+}

@@ -28,13 +28,15 @@
         <main>
             <section class="game-launcher">
                 <div class="game-card">
+                    <canvas id="bg-canvas"></canvas>
+
                     <div class="bg-animated"></div>
 
                     <img src="../Image/logo1-Photoroom.png" alt="Logo Chair or Die" class="hero-logo">
 
                     <div class="action-zone">
                         <button class="play-btn" onclick="LaunchGame()">Play Game</button>
-                        <span class="slogan">La chaise musicale devient un Battle Royale ! </span>
+                        <span class="slogan">La chaise musicale devient un Battle Royale !</span>
                     </div>
                 </div>
             </section>
@@ -42,7 +44,26 @@
 
         <footer>
             <p>Copyright © 2026 - Tous droits réservés</p>
-            <p>Made by Mattew, Stéphane, Batiste, Gabriel </p>
+            <p>Made by Mattew, Stéphane, Batiste, Gabriel</p>
         </footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                try {
+                    // Connexion au serveur Ratchet lancé via PHP
+                    const socket = new WebSocket('ws://localhost:8080');
+                    
+                    socket.onopen = () => {
+                        console.log("✅ Connexion réussie au serveur Chair or Die !");
+                    };
+
+                    socket.onerror = (error) => {
+                        console.warn("⚠️ Serveur WebSocket non détecté. Lancez 'php bin/server.php' dans votre terminal.");
+                    };
+                } catch (e) {
+                    console.error("Erreur d'initialisation WebSocket :", e);
+                }
+            });
+        </script>
     </body>
 </html>
