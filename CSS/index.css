@@ -108,3 +108,41 @@ main {
     z-index: 1; /* Derrière le logo et le bouton */
     pointer-events: none; /* Pour pouvoir cliquer sur le bouton à travers le canvas */
 }
+
+#game-arena {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    pointer-events: none; /* Très important : laisse passer les clics vers le bouton Play ! */
+    z-index: 50; /* Assez haut pour passer au-dessus de ton canvas */
+}
+
+/* --- L'AVATAR DU JOUEUR --- */
+.player-avatar {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 4px solid #3498db; 
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: black;
+    transform: translate(-50%, -50%) scale(1);
+    transition: background-color 0.2s, color 0.2s, transform 0.1s, border-color 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Petite ombre sympa */
+}
+
+/* --- QUAND LE JOUEUR S'ASSOIT --- */
+.player-avatar.sitting {
+    background-color: #e74c3c; 
+    border-color: #c0392b;
+    color: white;
+    transform: translate(-50%, -50%) scale(0.8);
+}

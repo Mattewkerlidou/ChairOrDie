@@ -1,49 +1,96 @@
-const socket = new WebSocket('ws://10.35.175.174:8080'); // Remplace localhost par ton IP locale pour tester sur mobile
-const stick = document.getElementById('joystick-stick');
-const sitBtn = document.getElementById('sit-btn');
+/**
+ * MANETTE JS - CHAIR OR DIE
+ */
 
-let isMoving = false;
+// 1. RÉCUPÉRATION DU PSEUDO DANS L'URL
+const urlParams = new URLSearchParams(window.location.search);
+const pseudoChoisi = urlParams.get('pseudo') || "Anonyme";
 
-// 1. Gérer le bouton SIT
-sitBtn.addEventListener('touchstart', () => {
-    const msg = { type: 'ACTION', action: 'SIT', pseudo: 'Joueur1' };
-    socket.send(JSON.stringify(msg));
-    sitBtn.style.transform = "scale(0.9)";
-});
+const nameDisplay = document.getElementById('player-name');
+if (nameDisplay) nameDisplay.innerText = pseudoChoisi;
 
-sitBtn.addEventListener('touchend', () => {
-    sitBtn.style.transform = "scale(1)";
-});
+// 2. CONNEXION AU SERVEUR
+const serverIP = window.location.hostname; 
+const socket = new WebSocket(`ws://${serverIP}:8080`);
 
-// 2. Gérer le Joystick (Simplifié)
-document.addEventListener('touchmove', (e) => {
-    const touch = e.touches[0];
-    const container = document.getElementById('joystick-base').getBoundingClientRect();
-    
-    // Calcul de la position relative au centre
-    let x = touch.clientX - (container.left + container.width / 2);
-    let y = touch.clientY - (container.top + container.height / 2);
+let isReady = false; // Le cadenas
 
-    // Limiter le mouvement au cercle
-    const distance = Math.sqrt(x*x + y*y);
-    const maxRadius = 40;
+socket.onopen = () => {
+    console.log("✅ Connexion établie. Demande d'autorisation pour le pseudo...");
+    // On envoie la demande
+    socket.send(JSON.stringify({
+        type: 'JOIN',
+        pseudo: pseudoChoisi
+    }));
+};
 
-    if (distance > maxRadius) {
-        x *= maxRadius / distance;
-        y *= maxRadius / distance;
+// --- NOUVEAU : ÉCOUTE DES RÉPONSES DU SERVEUR ---
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === 'JOIN_SUCCESS') {
+        isReady = true; // On ouvre le cadenas !
+        console.log("🚀 Pseudo accepté, joystick déverrouillé !");
     }
 
-    stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    if (data.type === 'ERROR') {
+        alert("Oups : " + data.message);
+        // On le renvoie à l'accueil pour changer de nom
+        window.location.href = "../Html/index.html"; 
+    }
+};
 
-    // Envoyer le mouvement au serveur
-    socket.send(JSON.stringify({
-        type: 'MOVE',
-        x: Math.round(x),
-        y: Math.round(y)
-    }));
-}, { passive: false });
+socket.onclose = () => {
+    console.warn("❌ Déconnecté du serveur.");
+    isReady = false;
+};
 
-document.addEventListener('touchend', () => {
-    stick.style.transform = "translate(-50%, -50%)";
-    socket.send(JSON.stringify({ type: 'MOVE', x: 0, y: 0 }));
-});
+// 3. GESTION DU JOYSTICK
+const stick = document.getElementById('joystick-stick');
+const base = document.getElementById('joystick-base');
+
+if (base && stick) {
+    base.addEventListener('touchmove', (e) => {
+        if (!isReady) return; // CADENAS FERMÉ = ON BLOQUE
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const rect = base.getBoundingClientRect();
+        let x = touch.clientX - (rect.left + rect.width / 2);
+        let y = touch.clientY - (rect.top + rect.height / 2);
+
+        const limit = 50;
+        const dist = Math.sqrt(x*x + y*y);
+        if (dist > limit) { x *= limit/dist; y *= limit/dist; }
+
+        stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+        socket.send(JSON.stringify({
+            type: 'MOVE',
+            x: parseFloat((x / limit).toFixed(2)),
+            y: parseFloat((y / limit).toFixed(2))
+        }));
+    }, { passive: false });
+
+    base.addEventListener('touchend', () => {
+        stick.style.transform = "translate(-50%, -50%)";
+        if (isReady) socket.send(JSON.stringify({ type: 'MOVE', x: 0, y: 0 }));
+    });
+}
+
+// 4. GESTION DU BOUTON SIT
+const sitBtn = document.getElementById('sit-btn');
+
+if (sitBtn) {
+    sitBtn.addEventListener('touchstart', (e) => {
+        if (!isReady) return; // CADENAS
+        e.preventDefault();
+        
+        sitBtn.style.transform = "scale(0.9)";
+        socket.send(JSON.stringify({ type: 'ACTION', action: 'SIT' }));
+    });
+
+    sitBtn.addEventListener('touchend', () => {
+        sitBtn.style.transform = "scale(1)";
+    });
+}
