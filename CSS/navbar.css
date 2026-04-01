@@ -1,48 +1,48 @@
 header {
-    background-color: #1A3B70; /* Bleu Roi officiel  */
-    color: #FFFFFF;
-    padding: 10px 5%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Logo à gauche, liens à droite */
-    border-bottom: 4px solid #E9C46A; /* Accent Jaune Solaire  */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    position: sticky; /* Reste visible en haut lors du scroll */
-    top: 0;
-    z-index: 1000;
+	background-color: #1a3b70; /* Bleu Roi officiel  */
+	color: #ffffff;
+	padding: 10px 5%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between; /* Logo à gauche, liens à droite */
+	border-bottom: 4px solid #e9c46a; /* Accent Jaune Solaire  */
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+	position: sticky; /* Reste visible en haut lors du scroll */
+	top: 0;
+	z-index: 1000;
 }
 
 nav {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-content: space-between;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	justify-content: space-between;
 }
 
 nav a {
-    color: #FFFFFF;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 20px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
+	color: #ffffff;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 20px;
+	padding: 10px 20px;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+	text-transform: uppercase;
 }
 
 nav img {
-    width: 60px; /* Taille plus élégante */
-    height: auto;
-    transition: transform 0.3s ease;
+	width: 60px; /* Taille plus élégante */
+	height: auto;
+	transition: transform 0.3s ease;
 }
 
 /* Effets de survol */
 nav a:hover {
-    color: #1A3B70;
-    background-color: #E9C46A; /* Le bouton devient jaune au survol  */
-    transform: scale(1.1);
+	color: #1a3b70;
+	background-color: #e9c46a; /* Le bouton devient jaune au survol  */
+	transform: scale(1.1);
 }
 
 nav a img:hover {
-    transform: rotate(-5deg) scale(1.1);
+	transform: rotate(-5deg) scale(1.1);
 }

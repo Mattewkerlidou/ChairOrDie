@@ -1,148 +1,327 @@
-/* index.css */
-
 main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh; /* Pour centrer la carte verticalement */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 80vh;
 }
-
-.game-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 650px;
-    height: 450px;
-    border: 4px solid #E9C46A; /* Bordure Jaune Solaire */
-    border-radius: 30px;
-    overflow: hidden;
-    background-color: #1A3B70; /* Bleu Roi */
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-}
-
-.game-card:hover {
-    transform: scale(1.02);
-}
-
-/* Animation Sunburst en arrière-plan de la carte */
-.bg-animated {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: repeating-conic-gradient(
-        from 0deg,
-        rgba(233, 196, 106, 0.1) 0deg 20deg,
-        rgba(244, 162, 97, 0.05) 20deg 40deg
-    );
-    animation: rotate 15s linear infinite;
-    z-index: 1;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.hero-logo {
-    position: relative;
-    width: 250px;
-    z-index: 2;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
-    margin-bottom: 20px;
-}
-
-.action-zone {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.play-btn {
-    background-color: #E9C46A; /* Jaune Solaire */
-    color: #1A3B70;
-    border: none;
-    padding: 15px 40px;
-    font-size: 26px;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 6px 0 #bc9c4f;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    margin-bottom: 15px;
-}
-
-.play-btn:hover {
-    background-color: #F4A261; /* Change en Orange Pastel au survol */
-    transform: translateY(-2px);
-    box-shadow: 0 8px 0 #d1874c;
-}
-
-.play-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 #d1874c;
-}
-
-.slogan {
-    color: #FFFFFF;
-    font-size: 18px;
-    font-weight: 300;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    font-style: italic;
-}
-
-
 #bg-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* Derrière le logo et le bouton */
-    pointer-events: none; /* Pour pouvoir cliquer sur le bouton à travers le canvas */
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	pointer-events: none;
 }
-
+.game-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 650px;
+	min-height: 550px;
+	height: auto;
+	padding: 30px 20px;
+	border: 4px solid #e9c46a;
+	border-radius: 30px;
+	overflow: hidden;
+	background-color: #1a3b70;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+	transition: transform 0.3s ease;
+}
+.game-card:hover {
+	transform: scale(1.02);
+}
+.bg-animated {
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: repeating-conic-gradient(
+		from 0deg,
+		rgba(233, 196, 106, 0.1) 0deg 20deg,
+		rgba(244, 162, 97, 0.05) 20deg 40deg
+	);
+	animation: rotate 15s linear infinite;
+	z-index: 1;
+}
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+.hero-logo {
+	position: relative;
+	width: 200px;
+	z-index: 2;
+	filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+	margin-bottom: 25px;
+}
+.action-zone {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.btn-main {
+	border: none;
+	padding: 15px 40px;
+	font-size: 20px;
+	font-weight: bold;
+	border-radius: 50px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	margin-bottom: 15px;
+}
+.btn-join {
+	background-color: #e74c3c;
+	color: white;
+	box-shadow: 0 6px 0 #c0392b;
+}
+.btn-join:hover {
+	background-color: #c0392b;
+	transform: translateY(-2px);
+	box-shadow: 0 8px 0 #922b21;
+}
+.btn-join:active {
+	transform: translateY(4px);
+	box-shadow: 0 2px 0 #922b21;
+}
+.btn-qr {
+	background-color: #3498db;
+	color: white;
+	box-shadow: 0 6px 0 #2980b9;
+}
+.btn-qr:hover {
+	background-color: #2980b9;
+	transform: translateY(-2px);
+	box-shadow: 0 8px 0 #1c5980;
+}
+.btn-qr:active {
+	transform: translateY(4px);
+	box-shadow: 0 2px 0 #1c5980;
+}
+.btn-host {
+	margin-top: 10px;
+	margin-bottom: 15px;
+	padding: 10px 20px;
+	font-size: 14px;
+	cursor: pointer;
+	border-radius: 8px;
+	border: none;
+	background-color: #e9c46a;
+	color: #1a3b70;
+	font-weight: bold;
+	box-shadow: 0 4px 0px #bc9c4f;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
+}
+.btn-host:active {
+	transform: translateY(2px);
+	box-shadow: 0 2px 0px #bc9c4f;
+}
+.slogan {
+	color: #ffffff;
+	font-size: 18px;
+	font-weight: 300;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+	font-style: italic;
+	margin-top: 10px;
+}
+.modal-container {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.85);
+	z-index: 10000;
+	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+.modal-container.active {
+	display: flex;
+	opacity: 1;
+}
+.modal-content {
+	background-color: #1a3b70;
+	color: white;
+	padding: 30px 40px;
+	border-radius: 20px;
+	border: 4px solid #e9c46a;
+	text-align: center;
+	position: relative;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+	max-width: 90%;
+	animation: popIn 0.3s ease-out;
+}
+@keyframes popIn {
+	from {
+		transform: scale(0.8);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+.close-modal {
+	position: absolute;
+	top: 10px;
+	right: 20px;
+	font-size: 35px;
+	font-weight: bold;
+	cursor: pointer;
+	color: #e9c46a;
+	transition: color 0.2s;
+}
+.close-modal:hover {
+	color: #f4a261;
+}
+.qr-image-big {
+	width: 250px;
+	height: 250px;
+	margin: 20px 0;
+	border: 10px solid white;
+	border-radius: 10px;
+	background-color: white;
+}
+.pseudo-input {
+	padding: 10px;
+	font-size: 18px;
+	width: 80%;
+	border-radius: 8px;
+	border: 2px solid #e9c46a;
+	margin: 15px 0;
+	color: black;
+	outline: none;
+}
+.lobby-list {
+	background-color: rgba(0, 0, 0, 0.4);
+	border: 3px solid #3498db;
+	border-radius: 15px;
+	padding: 15px;
+	width: 90%;
+	margin: 0 auto;
+	min-height: 150px;
+	max-height: 250px;
+	overflow-y: auto;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+	align-content: flex-start;
+}
+.player-badge {
+	background-color: #3498db;
+	color: white;
+	padding: 8px 16px;
+	border-radius: 20px;
+	font-weight: bold;
+	font-size: 16px;
+	box-shadow: 0 4px 0px #2980b9;
+	animation: popIn 0.2s ease-out;
+}
+.lobby-list::-webkit-scrollbar {
+	width: 8px;
+}
+.lobby-list::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 10px;
+}
+.lobby-list::-webkit-scrollbar-thumb {
+	background: #e9c46a;
+	border-radius: 10px;
+}
 #game-arena {
-    position: fixed; 
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    pointer-events: none; /* Très important : laisse passer les clics vers le bouton Play ! */
-    z-index: 50; /* Assez haut pour passer au-dessus de ton canvas */
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 50;
 }
-
-/* --- L'AVATAR DU JOUEUR --- */
+#stop-game-btn {
+	display: none;
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	background-color: #e74c3c;
+	color: white;
+	border: 3px solid #c0392b;
+	padding: 10px 20px;
+	font-size: 18px;
+	font-weight: bold;
+	border-radius: 12px;
+	cursor: pointer;
+	z-index: 10000;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+	transition:
+		transform 0.2s,
+		background-color 0.2s;
+}
+#stop-game-btn:hover {
+	background-color: #c0392b;
+	transform: scale(1.05);
+}
 .player-avatar {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 4px solid #3498db; 
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
-    color: black;
-    transform: translate(-50%, -50%) scale(1);
-    transition: background-color 0.2s, color 0.2s, transform 0.1s, border-color 0.2s;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Petite ombre sympa */
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 4px solid #3498db;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	font-size: 18px;
+	color: black;
+	transform: translate(-50%, -50%) scale(1);
+	transition:
+		background-color 0.2s,
+		color 0.2s,
+		transform 0.1s,
+		border-color 0.2s;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
-
-/* --- QUAND LE JOUEUR S'ASSOIT --- */
 .player-avatar.sitting {
-    background-color: #e74c3c; 
-    border-color: #c0392b;
-    color: white;
-    transform: translate(-50%, -50%) scale(0.8);
+	background-color: #e74c3c;
+	border-color: #c0392b;
+	color: white;
+	transform: translate(-50%, -50%) scale(0.8);
+}
+.game-chair {
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	background-color: #8b4513;
+	border: 3px solid #5c3a21;
+	border-radius: 8px;
+	transform: translate(-50%, -50%);
+	z-index: 40;
+	transition:
+		background-color 0.2s,
+		transform 0.2s;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 30px;
+}
+.game-chair.occupied {
+	background-color: #2ecc71;
+	transform: translate(-50%, -50%) scale(1.1);
 }

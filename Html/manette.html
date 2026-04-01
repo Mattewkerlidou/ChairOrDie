@@ -4,22 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manette - Chair or Die</title>
-    <link rel="stylesheet" href="../CSS/global.css">
-    <link rel="stylesheet" href="../CSS/manette.css">
+    <link rel="stylesheet" href="../CSS/manette.css?v=11">
 </head>
 <body class="controller-body">
-    <div id="status-bar">Connecté en tant que : <span id="player-name">...</span></div>
 
-    <div id="joystick-container">
+    <div id="portrait-warning">
+        <h2>🔄 Tourne ton téléphone</h2>
+        <p>Le jeu se joue en mode paysage !</p>
+    </div>
+
+    <div id="game-ui">
+        <div id="left-touch-zone">
+            <div id="joystick-hint">
+                <div class="hint-ring"></div>
+                <span>Joystick</span>
+            </div>
+        </div>
+
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
+
+        <button id="btn-item" class="item-box">
+            <span id="item-empty-text">Vide</span>
+            <img id="item-sprite" src="" alt="Objet" style="display: none;">
+        </button>
+
+        <button id="btn-sit" class="action-btn sit-btn">🪑 S'ASSEOIR</button>
+        <button id="btn-highlight" class="small-btn">💡 HIGHLIGHT</button>
     </div>
 
-    <div class="action-zone-mobile">
-        <button id="sit-btn" class="sit-button">SIT !</button>
-    </div>
-
-    <script src="../JavaScript/manette.js?v=3"></script>
+    <script src="../JavaScript/manette.js?v=11"></script>
 </body>
 </html>

@@ -1,154 +1,192 @@
-// --- CONFIGURATION WEBSOCKET ET JOUEURS ---
-let socket;
-const playersOnScreen = {}; // Dictionnaire pour stocker les avatars des joueurs
+// =========================================
+// LOGIQUE DES BOUTONS DU MENU (UI)
+// =========================================
+window.toggleQRCode = () => {
+	document.getElementById("qr-modal").classList.toggle("active");
+};
+window.JoinGame = () => {
+	document.getElementById("pseudo-modal").classList.add("active");
+};
+window.closePseudoModal = () => {
+	document.getElementById("pseudo-modal").classList.remove("active");
+};
 
-function initWebSocket() {
-    // On utilise hostname pour que ça marche aussi bien sur le PC que sur le réseau local
-    const serverIP = window.location.hostname;
-    socket = new WebSocket(`ws://${serverIP}:8080`);
+window.ConfirmJoin = function () {
+	const code = document.getElementById("room-code-input").value;
+	const pseudo = document.getElementById("pseudo-input").value;
 
-    socket.onopen = () => {
-        console.log("✅ Écran principal connecté au serveur de jeu !");
-    };
+	if (!code || code.trim() === "")
+		return alert("Tu dois entrer le code de la Room !");
+	if (!pseudo || pseudo.trim() === "")
+		return alert("Tu dois choisir un pseudo !");
 
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const arena = document.getElementById('game-arena');
-        if (!arena) return;
+	window.location.href =
+		"manette.html?pseudo=" +
+		encodeURIComponent(pseudo.trim()) +
+		"&code=" +
+		encodeURIComponent(code.trim().toUpperCase());
+};
 
-        // 1. UN NOUVEAU JOUEUR REJOINT
-        if (data.type === 'JOIN' || data.type === 'NEW_PLAYER') {
-            const pseudo = data.pseudo;
-            if (!playersOnScreen[pseudo]) {
-                console.log("🎮 " + pseudo + " vient d'entrer dans le lobby !");
-                
-                // Création de l'avatar HTML
-                const playerDiv = document.createElement('div');
-                playerDiv.id = "player-" + pseudo;
-                playerDiv.className = "player-avatar"; // Classe CSS gérée dans index.css
-                playerDiv.innerText = pseudo.substring(0, 3).toUpperCase(); // 3 premières lettres
+// =========================================
+// LOGIQUE DU LOBBY ET CHANGEMENT D'ÉCRAN
+// =========================================
+window.updateLobbyUI = function () {
+	const listDiv = document.getElementById("player-list");
+	const countSpan = document.getElementById("player-count");
+	if (!listDiv || !countSpan) return;
 
-                // Apparition au centre
-                playerDiv.style.left = (window.innerWidth / 2) + "px";
-                playerDiv.style.top = (window.innerHeight / 2) + "px";
+	const pseudos = Object.keys(window.playersOnScreen);
+	countSpan.innerText = pseudos.length;
+	listDiv.innerHTML = "";
+	pseudos.forEach((pseudo) => {
+		const badge = document.createElement("div");
+		badge.className = "player-badge";
+		badge.innerText = pseudo;
+		listDiv.appendChild(badge);
+	});
+};
 
-                arena.appendChild(playerDiv);
-                playersOnScreen[pseudo] = playerDiv;
-            }
-        }
+window.OpenLobby = function () {
+	window.gameState = "LOBBY";
+	window.currentRoomCode = window.generateRoomCode();
+	document.getElementById("display-room-code").innerText =
+		window.currentRoomCode;
 
-        // 2. UN JOUEUR BOUGE SON JOYSTICK
-        if (data.type === 'MOVE' && playersOnScreen[data.pseudo]) {
-            const playerDiv = playersOnScreen[data.pseudo];
-            
-            let currentX = parseFloat(playerDiv.style.left);
-            let currentY = parseFloat(playerDiv.style.top);
-            const speed = 10; // Vitesse du personnage
+	if (!window.socket || window.socket.readyState !== WebSocket.OPEN) {
+		window.initWebSocket();
+	}
 
-            currentX += data.x * speed;
-            currentY += data.y * speed;
+	document.getElementById("main-menu").style.display = "none";
+	document.getElementById("main-logo").style.display = "none";
+	document.getElementById("lobby-screen").style.display = "block";
 
-            // On l'empêche de sortir de l'écran (marge de 30px)
-            currentX = Math.max(30, Math.min(window.innerWidth - 30, currentX));
-            currentY = Math.max(30, Math.min(window.innerHeight - 30, currentY));
+	updateLobbyUI();
+	const elem = document.documentElement;
+	if (elem.requestFullscreen)
+		elem.requestFullscreen().catch((err) => console.log(err));
+};
 
-            playerDiv.style.left = currentX + "px";
-            playerDiv.style.top = currentY + "px";
-        }
+window.StartActualGame = function () {
+	window.gameState = "PLAYING";
 
-        // 3. UN JOUEUR APPUIE SUR LE BOUTON "SIT"
-        if (data.type === 'ACTION' && data.action === 'SIT' && playersOnScreen[data.pseudo]) {
-            const playerDiv = playersOnScreen[data.pseudo];
-            
-            // On lui ajoute la classe CSS qui le rend rouge et plus petit
-            playerDiv.classList.add('sitting');
-            
-            // On lui retire après 300 millisecondes
-            setTimeout(() => {
-                if (playerDiv) playerDiv.classList.remove('sitting');
-            }, 300);
-        }
+	document.getElementById("lobby-screen").style.display = "none";
+	document.querySelector(".bg-animated").style.display = "none";
 
-        // 4. UN JOUEUR DÉCONNECTE SA MANETTE
-        if (data.type === 'PLAYER_LEFT' && playersOnScreen[data.pseudo]) {
-            console.log("👋 " + data.pseudo + " a quitté la partie.");
-            const playerDiv = playersOnScreen[data.pseudo];
-            if (playerDiv.parentNode) {
-                playerDiv.parentNode.removeChild(playerDiv);
-            }
-            delete playersOnScreen[data.pseudo];
-        }
-    };
+	const card = document.querySelector(".game-card");
+	if (card) {
+		card.dataset.oldBorder = card.style.border;
+		card.dataset.oldBackground = card.style.background;
+		card.dataset.oldBoxShadow = card.style.boxShadow;
+		card.style.border = "none";
+		card.style.background = "transparent";
+		card.style.boxShadow = "none";
+		card.style.width = "100vw";
+		card.style.height = "100vh";
+	}
 
-    socket.onerror = () => {
-        console.error("❌ Erreur de connexion au serveur WebSocket. Lance 'php bin/server.php'.");
-    };
-}
+	document.getElementById("stop-game-btn").style.display = "block";
 
-// --- LOGIQUE DU MENU ---
-function LaunchGame() {
-    const pseudo = prompt("Entre ton pseudo pour jouer :");
-    
-    if (pseudo && pseudo.trim() !== "") {
-        // On redirige vers la manette en passant le pseudo dans l'URL
-        window.location.href = "manette.html?pseudo=" + encodeURIComponent(pseudo.trim());
-    } else {
-        alert("Pseudo obligatoire !");
-    }
-}
+	Object.keys(window.playersOnScreen).forEach((pseudo) => {
+		window.spawnPlayer(pseudo);
+	});
 
-// --- INITIALISATION, ANIMATION ET CURSEUR ---
-window.addEventListener('DOMContentLoaded', () => {
-    // Initialisation
-    initWebSocket();
-    testCursorImage();
+	const nbJoueurs = Object.keys(window.playersOnScreen).length;
+	window.spawnChairs(nbJoueurs > 1 ? nbJoueurs - 1 : 3);
+};
 
-    // Gestion du Canvas (Particules)
-    const canvas = document.getElementById("bg-canvas");
-    if (canvas) {
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+window.StopGame = function () {
+	window.gameState = "MENU";
+	window.currentRoomCode = "";
 
-        const particles = [];
-        for(let i = 0; i < 50; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                r: Math.random() * 3 + 1,
-                dx: (Math.random() - 0.5) * 0.5,
-                dy: (Math.random() - 0.5) * 0.5
-            });
-        }
+	// Alerte générale avant fermeture
+	if (window.socket && window.socket.readyState === WebSocket.OPEN) {
+		window.socket.send(JSON.stringify({ type: "GAME_CLOSED" }));
+		setTimeout(() => {
+			window.socket.close();
+			window.socket = null;
+		}, 100);
+	} else if (window.socket) {
+		window.socket.close();
+		window.socket = null;
+	}
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(255,200,50,0.5)";
-                ctx.fill();
-                p.x += p.dx;
-                p.y += p.dy;
-                if(p.x > canvas.width || p.x < 0) p.dx *= -1;
-                if(p.y > canvas.height || p.y < 0) p.dy *= -1;
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
+	if (document.fullscreenElement)
+		document.exitFullscreen().catch((err) => console.log(err));
 
-        // Redimensionnement du canvas si on change la taille de la fenêtre
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    }
+	document.getElementById("main-menu").style.display = "flex";
+	document.getElementById("main-logo").style.display = "block";
+	document.getElementById("lobby-screen").style.display = "none";
+	document.querySelector(".bg-animated").style.display = "block";
+
+	const card = document.querySelector(".game-card");
+	if (card) {
+		card.style.border = card.dataset.oldBorder || "";
+		card.style.background = card.dataset.oldBackground || "";
+		card.style.boxShadow = card.dataset.oldBoxShadow || "";
+		card.style.width = "650px";
+		card.style.minHeight = "550px";
+	}
+
+	document.getElementById("stop-game-btn").style.display = "none";
+
+	window.chairsOnScreen.forEach((chair) => {
+		if (chair.element && chair.element.parentNode)
+			chair.element.parentNode.removeChild(chair.element);
+	});
+	window.chairsOnScreen.length = 0;
+
+	Object.values(window.playersOnScreen).forEach((pData) => {
+		if (pData.element && pData.element.parentNode) {
+			pData.element.parentNode.removeChild(pData.element);
+		}
+	});
+	window.playersOnScreen = {};
+	updateLobbyUI();
+};
+
+// =========================================
+// FOND ANIMÉ (CANVAS) ET CURSEUR
+// =========================================
+window.addEventListener("DOMContentLoaded", () => {
+	const cursorImg = new Image();
+	cursorImg.src = "../Image/chair-cursor.png";
+	cursorImg.onload = () => {
+		document.body.style.cursor =
+			"url('../Image/chair-cursor.png') 16 16, auto";
+	};
+
+	const canvas = document.getElementById("bg-canvas");
+	if (canvas) {
+		const ctx = canvas.getContext("2d");
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		const particles = [];
+		for (let i = 0; i < 50; i++)
+			particles.push({
+				x: Math.random() * canvas.width,
+				y: Math.random() * canvas.height,
+				r: Math.random() * 3 + 1,
+				dx: (Math.random() - 0.5) * 0.5,
+				dy: (Math.random() - 0.5) * 0.5,
+			});
+		function animate() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			particles.forEach((p) => {
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+				ctx.fillStyle = "rgba(255,200,50,0.5)";
+				ctx.fill();
+				p.x += p.dx;
+				p.y += p.dy;
+				if (p.x > canvas.width || p.x < 0) p.dx *= -1;
+				if (p.y > canvas.height || p.y < 0) p.dy *= -1;
+			});
+			requestAnimationFrame(animate);
+		}
+		animate();
+		window.addEventListener("resize", () => {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		});
+	}
 });
-
-function testCursorImage() {
-    const cursorImg = new Image();
-    cursorImg.src = "../Image/chair-cursor.png";
-    cursorImg.onload = () => {
-        document.body.style.cursor = "url('../Image/chair-cursor.png') 16 16, auto";
-    };
-}

@@ -43,11 +43,19 @@ class SocketHandler implements MessageComponentInterface {
             $this->joueurs[$from->resourceId] = $pseudoDemande;
             echo "✅ IDENTIFICATION REUSSIE : ID({$from->resourceId}) est '{$pseudoDemande}'\n";
             
-            // On donne le feu vert à la manette
-            $from->send(json_encode(['type' => 'JOIN_SUCCESS']));
+            // On prépare le message pour prévenir le PC Hôte
+            $msgData = [
+                'type' => 'NEW_PLAYER', 
+                'pseudo' => $pseudoDemande
+            ];
             
-            // Optionnel : on prévient le grand écran (index) qu'un nouveau joueur arrive
-            $broadcastMsg = json_encode(['type' => 'NEW_PLAYER', 'pseudo' => $pseudoDemande]);
+            // 🛠️ CORRECTION 1 : On ajoute le code secret s'il a été envoyé par la manette !
+            if (isset($data->code)) {
+                $msgData['code'] = $data->code;
+            }
+
+            $broadcastMsg = json_encode($msgData);
+            
             foreach ($this->clients as $client) {
                 if ($client !== $from) { // Pas besoin de se l'envoyer à soi-même
                     $client->send($broadcastMsg);
@@ -63,7 +71,11 @@ class SocketHandler implements MessageComponentInterface {
         }
 
         // --- 3. BROADCAST (MOVE, ACTION...) ---
-        $data->pseudo = $this->joueurs[$from->resourceId];
+        // 🛠️ CORRECTION 2 : Le PC a le droit d'envoyer des messages avec un "pseudo" qui n'est pas le sien (pour accepter/rejeter un joueur)
+        if ($data->type !== 'HOST_ACCEPT_JOIN' && $data->type !== 'HOST_REJECT_JOIN') {
+            $data->pseudo = $this->joueurs[$from->resourceId]; // Sécurité classique pour les mouvements
+        }
+        
         $nouveauMessage = json_encode($data);
 
         foreach ($this->clients as $client) {

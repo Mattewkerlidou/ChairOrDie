@@ -1,96 +1,199 @@
-/**
- * MANETTE JS - CHAIR OR DIE
- */
-
-// 1. RÉCUPÉRATION DU PSEUDO DANS L'URL
+// =========================================
+// 1. CONNEXION ET SÉCURITÉ (AVEC ROOM CODE)
+// =========================================
 const urlParams = new URLSearchParams(window.location.search);
-const pseudoChoisi = urlParams.get('pseudo') || "Anonyme";
+const pseudoChoisi = urlParams.get("pseudo") || "Anonyme";
+const codeChoisi = urlParams.get("code") || "";
 
-const nameDisplay = document.getElementById('player-name');
-if (nameDisplay) nameDisplay.innerText = pseudoChoisi;
-
-// 2. CONNEXION AU SERVEUR
-const serverIP = window.location.hostname; 
+const serverIP = window.location.hostname;
 const socket = new WebSocket(`ws://${serverIP}:8080`);
 
-let isReady = false; // Le cadenas
+let isReady = false;
 
 socket.onopen = () => {
-    console.log("✅ Connexion établie. Demande d'autorisation pour le pseudo...");
-    // On envoie la demande
-    socket.send(JSON.stringify({
-        type: 'JOIN',
-        pseudo: pseudoChoisi
-    }));
+	console.log("✅ Connexion établie. Envoi du code Room dans le JOIN...");
+
+	socket.send(
+		JSON.stringify({
+			type: "JOIN",
+			pseudo: pseudoChoisi,
+			code: codeChoisi,
+		}),
+	);
 };
 
-// --- NOUVEAU : ÉCOUTE DES RÉPONSES DU SERVEUR ---
 socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
+	const data = JSON.parse(event.data);
 
-    if (data.type === 'JOIN_SUCCESS') {
-        isReady = true; // On ouvre le cadenas !
-        console.log("🚀 Pseudo accepté, joystick déverrouillé !");
-    }
+	if (data.type === "HOST_ACCEPT_JOIN" && data.pseudo === pseudoChoisi) {
+		isReady = true;
+		console.log("🚀 Code accepté, commandes déverrouillées !");
+	}
 
-    if (data.type === 'ERROR') {
-        alert("Oups : " + data.message);
-        // On le renvoie à l'accueil pour changer de nom
-        window.location.href = "../Html/index.html"; 
-    }
+	if (data.type === "HOST_REJECT_JOIN" && data.pseudo === pseudoChoisi) {
+		alert("❌ Connexion refusée : " + data.message);
+		window.location.href = "../Html/index.html";
+	}
+
+	if (data.type === "ERROR" && !isReady) {
+		alert("Erreur Serveur : " + data.message);
+		window.location.href = "../Html/index.html";
+	}
+
+	// Réception du signal de fin de partie
+	if (data.type === "GAME_CLOSED") {
+		alert("🛑 L'hôte a fermé la partie ! Retour à l'accueil.");
+		window.location.href = "../Html/index.html";
+	}
 };
 
 socket.onclose = () => {
-    console.warn("❌ Déconnecté du serveur.");
-    isReady = false;
+	console.warn("❌ Déconnecté du serveur.");
+	isReady = false;
 };
 
-// 3. GESTION DU JOYSTICK
-const stick = document.getElementById('joystick-stick');
-const base = document.getElementById('joystick-base');
-
-if (base && stick) {
-    base.addEventListener('touchmove', (e) => {
-        if (!isReady) return; // CADENAS FERMÉ = ON BLOQUE
-        e.preventDefault();
-
-        const touch = e.touches[0];
-        const rect = base.getBoundingClientRect();
-        let x = touch.clientX - (rect.left + rect.width / 2);
-        let y = touch.clientY - (rect.top + rect.height / 2);
-
-        const limit = 50;
-        const dist = Math.sqrt(x*x + y*y);
-        if (dist > limit) { x *= limit/dist; y *= limit/dist; }
-
-        stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-
-        socket.send(JSON.stringify({
-            type: 'MOVE',
-            x: parseFloat((x / limit).toFixed(2)),
-            y: parseFloat((y / limit).toFixed(2))
-        }));
-    }, { passive: false });
-
-    base.addEventListener('touchend', () => {
-        stick.style.transform = "translate(-50%, -50%)";
-        if (isReady) socket.send(JSON.stringify({ type: 'MOVE', x: 0, y: 0 }));
-    });
+// =========================================
+// 2. FONCTIONS D'ENVOI AU SERVEUR
+// =========================================
+function sendMove(x, y) {
+	if (isReady && socket.readyState === WebSocket.OPEN) {
+		socket.send(
+			JSON.stringify({
+				type: "MOVE",
+				pseudo: pseudoChoisi,
+				x: parseFloat(x.toFixed(2)),
+				y: parseFloat(y.toFixed(2)),
+			}),
+		);
+	}
 }
 
-// 4. GESTION DU BOUTON SIT
-const sitBtn = document.getElementById('sit-btn');
+function sendAction(actionName) {
+	if (isReady && socket.readyState === WebSocket.OPEN) {
+		socket.send(
+			JSON.stringify({
+				type: "ACTION",
+				pseudo: pseudoChoisi,
+				action: actionName,
+			}),
+		);
+	}
+}
 
-if (sitBtn) {
-    sitBtn.addEventListener('touchstart', (e) => {
-        if (!isReady) return; // CADENAS
-        e.preventDefault();
-        
-        sitBtn.style.transform = "scale(0.9)";
-        socket.send(JSON.stringify({ type: 'ACTION', action: 'SIT' }));
-    });
+// =========================================
+// 3. GESTION DU JOYSTICK FLOTTANT
+// =========================================
+const touchZone = document.getElementById("left-touch-zone");
+const joyBase = document.getElementById("joystick-base");
+const joyStick = document.getElementById("joystick-stick");
+const joyHint = document.getElementById("joystick-hint");
 
-    sitBtn.addEventListener('touchend', () => {
-        sitBtn.style.transform = "scale(1)";
-    });
+let joyActive = false;
+let joyOriginX = 0;
+let joyOriginY = 0;
+let touchId = null;
+const maxRadius = 50;
+
+if (touchZone) {
+	touchZone.addEventListener(
+		"touchstart",
+		(e) => {
+			if (!isReady) return;
+			e.preventDefault();
+			if (joyActive) return;
+
+			const touch = e.changedTouches[0];
+			touchId = touch.identifier;
+			joyActive = true;
+
+			joyOriginX = touch.clientX;
+			joyOriginY = touch.clientY;
+
+			const limiteDroite = window.innerWidth / 2 - 75;
+			if (joyOriginX > limiteDroite) joyOriginX = limiteDroite;
+
+			joyBase.style.left = joyOriginX + "px";
+			joyBase.style.top = joyOriginY + "px";
+			joyBase.style.display = "block";
+
+			joyStick.style.transform = `translate(-50%, -50%)`;
+
+			if (joyHint) joyHint.style.opacity = "0";
+		},
+		{ passive: false },
+	);
+
+	touchZone.addEventListener(
+		"touchmove",
+		(e) => {
+			if (!isReady || !joyActive) return;
+			e.preventDefault();
+
+			for (let i = 0; i < e.changedTouches.length; i++) {
+				const touch = e.changedTouches[i];
+				if (touch.identifier === touchId) {
+					let dx = touch.clientX - joyOriginX;
+					let dy = touch.clientY - joyOriginY;
+					let distance = Math.sqrt(dx * dx + dy * dy);
+
+					if (distance > maxRadius) {
+						dx = (dx / distance) * maxRadius;
+						dy = (dy / distance) * maxRadius;
+					}
+
+					joyStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+					sendMove(dx / maxRadius, dy / maxRadius);
+				}
+			}
+		},
+		{ passive: false },
+	);
+
+	function stopJoystick(e) {
+		if (!isReady || !joyActive) return;
+		e.preventDefault();
+
+		for (let i = 0; i < e.changedTouches.length; i++) {
+			if (e.changedTouches[i].identifier === touchId) {
+				joyActive = false;
+				touchId = null;
+				joyBase.style.display = "none";
+				sendMove(0, 0);
+				if (joyHint) joyHint.style.opacity = "0.3";
+			}
+		}
+	}
+
+	touchZone.addEventListener("touchend", stopJoystick);
+	touchZone.addEventListener("touchcancel", stopJoystick);
+}
+
+// =========================================
+// 4. GESTION DES BOUTONS D'ACTION
+// =========================================
+const btnSit = document.getElementById("btn-sit");
+const btnItem = document.getElementById("btn-item");
+const btnHighlight = document.getElementById("btn-highlight");
+
+if (btnSit) {
+	btnSit.addEventListener("touchstart", (e) => {
+		e.preventDefault();
+		sendAction("SIT");
+	});
+}
+
+if (btnItem) {
+	btnItem.addEventListener("touchstart", (e) => {
+		e.preventDefault();
+		const isEmpty =
+			document.getElementById("item-empty-text").style.display !== "none";
+		if (!isEmpty) sendAction("USE_ITEM");
+	});
+}
+
+if (btnHighlight) {
+	btnHighlight.addEventListener("touchstart", (e) => {
+		e.preventDefault();
+		sendAction("HIGHLIGHT");
+	});
 }
