@@ -32,12 +32,17 @@ class Partie {
 
     // Relie un joueur à une partie (quand il rejoint le Lobby)
     public function rejoindreLobby($id_partie, $id_joueur) {
-        // Le "INSERT IGNORE" empêche de créer un doublon si le joueur rafraîchit sa page
-        $stmt = $this->pdo->prepare("INSERT IGNORE INTO connexions_lobby (partie_id, joueur_id, est_connecte) VALUES (:partie_id, :joueur_id, TRUE)");
-        return $stmt->execute([
-            'partie_id' => $id_partie,
-            'joueur_id' => $id_joueur
-        ]);
+        try {
+            $stmt = $this->pdo->prepare("INSERT IGNORE INTO connexions_lobby (partie_id, joueur_id, est_connecte) VALUES (:partie_id, :joueur_id, TRUE)");
+            return $stmt->execute([
+                'partie_id' => $id_partie,
+                'joueur_id' => $id_joueur
+            ]);
+        } catch (PDOException $e) {
+            // Si le Trigger bloque l'insertion, on arrive ici !
+            // On renvoie le message d'erreur du Trigger pour l'afficher sur le téléphone.
+            return ['erreur' => true, 'message' => $e->getMessage()];
+        }
     }
 
     // Change le statut de la partie (ex: passe de 'en_attente' à 'terminee')

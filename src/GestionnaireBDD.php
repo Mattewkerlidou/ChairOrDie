@@ -1,8 +1,8 @@
 <?php
 // On inclut les fichiers de base de données une seule fois ici
-require_once 'connexion_bdd.php';
-require_once 'Joueur.php';
-require_once 'Partie.php';
+require_once __DIR__ . '/../SQL/connexion/connexion_bdd.php';
+require_once __DIR__ . '/../SQL/class/Joueur.php';
+require_once __DIR__ . '/../SQL/class/Partie.php';
 
 class GestionnaireBDD {
     private $joueurManager;

@@ -23,3 +23,28 @@ CREATE TABLE connexions_lobby (
     FOREIGN KEY (partie_id) REFERENCES parties(id) ON DELETE CASCADE,
     FOREIGN KEY (joueur_id) REFERENCES joueurs(id) ON DELETE CASCADE
 );
+
+
+
+DELIMITER //
+
+CREATE TRIGGER limiter_joueurs_partie
+BEFORE INSERT ON connexions_lobby
+FOR EACH ROW
+BEGIN
+    DECLARE nb_joueurs INT;
+
+    -- On compte combien de joueurs sont déjà inscrits dans cette partie précise
+    SELECT COUNT(*) INTO nb_joueurs
+    FROM connexions_lobby
+    WHERE partie_id = NEW.partie_id;
+
+    -- Si on a déjà 100 joueurs (ou plus), on bloque l'insertion et on renvoie une erreur
+    IF nb_joueurs >= 100 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Impossible de rejoindre : la partie a atteint la limite de 100 joueurs.';
+    END IF;
+END;
+//
+
+DELIMITER ;
