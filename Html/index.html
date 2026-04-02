@@ -1,211 +1,84 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="utf-8" />
-		<title>Chair or Die - Prêt à vous asseoir ?</title>
-		<link
-			rel="icon"
-			type="image/x-icon"
-			href="../Image/Favicon/favicon_io/favicon.ico"
-		/>
+    <head>
+        <meta charset="utf-8" />
+        <title>Chair or Die - Prêt à vous asseoir ?</title>
+        <link rel="icon" type="image/x-icon" href="../Image/Favicon/favicon_io/favicon.ico">
+        
+        <link rel="stylesheet" href="../CSS/global.css?v=26"/>   
+        <link rel="stylesheet" href="../CSS/navbar.css?v=26" />
+        <link rel="stylesheet" href="../CSS/footer.css?v=26" />
+        <link rel="stylesheet" href="../CSS/index.css?v=26" />
+        
+        <script src="../JavaScript/jeu.js?v=26" defer></script>
+        <script src="../JavaScript/script.js?v=26" defer></script>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <a href="index.html" class="logo-link"><img src="../Image/logo1-Photoroom.png" alt="logo"></a>
+                <div class="nav-links"><a href="index.html">Accueil</a><a href="Wiki.html">Wiki</a></div>
+            </nav>
+        </header>
+        
+        <main>
+            <section class="game-launcher">
+                <div class="game-card">
+                    <div id="game-arena"></div>
+                    <canvas id="bg-canvas"></canvas>
+                    <div class="bg-animated"></div>
+                    
+                    <img src="../Image/logo1-Photoroom.png" alt="Logo Chair or Die" class="hero-logo" id="main-logo">
+                    
+                    <div class="action-zone" id="main-menu">
+                        <button class="btn-main btn-join" onclick="JoinGame()">🎮 Rejoindre la partie</button>
+                        <button class="btn-main btn-qr" onclick="toggleQRCode()">📱 Afficher le QR Code</button>
+                        <button class="btn-host" onclick="OpenLobby()">▶️ Démarrer la manche (Écran Hôte)</button>
+                        <span class="slogan">La chaise musicale devient un Battle Royale !</span>
+                    </div>
 
-		<link rel="stylesheet" href="../CSS/global.css?v=11" />
-		<link rel="stylesheet" href="../CSS/navbar.css?v=11" />
-		<link rel="stylesheet" href="../CSS/footer.css?v=11" />
-		<link rel="stylesheet" href="../CSS/index.css?v=11" />
+                    <div id="lobby-screen" style="display: none; position: relative; z-index: 10; width: 100%; text-align: center; color: white;">
+                        <h2 style="font-size: 32px; margin-top: 0; margin-bottom: 5px; text-transform: uppercase;">Salon d'attente</h2>
+                        
+                        <div style="background-color: rgba(255,255,255,0.1); padding: 10px 30px; border-radius: 15px; margin: 15px auto; width: fit-content; border: 3px solid #E9C46A; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                            <h1 style="margin: 0; font-size: 40px; letter-spacing: 10px; color: #F4A261;">CODE : <span id="display-room-code" style="color: white;">----</span></h1>
+                        </div>
+                        
+                        <div style="font-size: 22px; color: #E9C46A; margin-bottom: 20px; font-weight: bold;">
+                            Joueurs prêts : <span id="player-count" style="color: white; font-size: 28px;">0</span> / 100
+                        </div>
+                        
+                        <div id="player-list" class="lobby-list"></div>
+                        <button class="btn-main btn-join" onclick="StartActualGame()" style="margin-top: 25px; font-size: 22px;">🏁 Lancer le jeu</button>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-		<script src="../JavaScript/jeu.js?v=11" defer></script>
-		<script src="../JavaScript/script.js?v=11" defer></script>
-	</head>
-	<body>
-		<header>
-			<nav>
-				<a href="index.html" class="logo-link"
-					><img src="../Image/logo1-Photoroom.png" alt="logo"
-				/></a>
-				<div class="nav-links">
-					<a href="index.html">Accueil</a><a href="Wiki.html">Wiki</a>
-				</div>
-			</nav>
-		</header>
+        <div id="qr-modal" class="modal-container" onclick="toggleQRCode()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <span class="close-modal" onclick="toggleQRCode()">&times;</span>
+                <h2>Scannez pour rejoindre</h2>
+                <img src="../Image/qr-code.png" alt="QR Code Chair or Die" class="qr-image-big">
+                <p>Ou tapez : <strong>192.168.0.50</strong></p>
+            </div>
+        </div>
 
-		<main>
-			<section class="game-launcher">
-				<div class="game-card">
-					<div id="game-arena"></div>
-					<canvas id="bg-canvas"></canvas>
-					<div class="bg-animated"></div>
+        <div id="pseudo-modal" class="modal-container" onclick="closePseudoModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <span class="close-modal" onclick="closePseudoModal()">&times;</span>
+                <h2>🎮 Rejoindre la Room</h2>
+                <input type="text" id="room-code-input" placeholder="CODE (4 lettres)" class="pseudo-input" style="text-transform: uppercase; text-align: center; font-weight: bold; font-size: 22px; letter-spacing: 5px;" maxlength="4">
+                <br>
+                <input type="text" id="pseudo-input" placeholder="Ton Pseudo..." class="pseudo-input" style="text-align: center;">
+                <br>
+                <button class="btn-main btn-join" style="margin-top: 20px;" onclick="ConfirmJoin()">Valider et Jouer</button>
+            </div>
+        </div>
 
-					<img
-						src="../Image/logo1-Photoroom.png"
-						alt="Logo Chair or Die"
-						class="hero-logo"
-						id="main-logo"
-					/>
-
-					<div class="action-zone" id="main-menu">
-						<button class="btn-main btn-join" onclick="JoinGame()">
-							🎮 Rejoindre la partie
-						</button>
-						<button
-							class="btn-main btn-qr"
-							onclick="toggleQRCode()"
-						>
-							📱 Afficher le QR Code
-						</button>
-						<button class="btn-host" onclick="OpenLobby()">
-							▶️ Démarrer la manche (Écran Hôte)
-						</button>
-						<span class="slogan"
-							>La chaise musicale devient un Battle Royale !</span
-						>
-					</div>
-
-					<div
-						id="lobby-screen"
-						style="
-							display: none;
-							position: relative;
-							z-index: 10;
-							width: 100%;
-							text-align: center;
-							color: white;
-						"
-					>
-						<h2
-							style="
-								font-size: 32px;
-								margin-top: 0;
-								margin-bottom: 5px;
-								text-transform: uppercase;
-							"
-						>
-							Salon d'attente
-						</h2>
-
-						<div
-							style="
-								background-color: rgba(255, 255, 255, 0.1);
-								padding: 10px 30px;
-								border-radius: 15px;
-								margin: 15px auto;
-								width: fit-content;
-								border: 3px solid #e9c46a;
-								box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-							"
-						>
-							<h1
-								style="
-									margin: 0;
-									font-size: 40px;
-									letter-spacing: 10px;
-									color: #f4a261;
-								"
-							>
-								CODE :
-								<span
-									id="display-room-code"
-									style="color: white"
-									>----</span
-								>
-							</h1>
-						</div>
-
-						<div
-							style="
-								font-size: 22px;
-								color: #e9c46a;
-								margin-bottom: 20px;
-								font-weight: bold;
-							"
-						>
-							Joueurs prêts :
-							<span
-								id="player-count"
-								style="color: white; font-size: 28px"
-								>0</span
-							>
-							/ 100
-						</div>
-
-						<div id="player-list" class="lobby-list"></div>
-						<button
-							class="btn-main btn-join"
-							onclick="StartActualGame()"
-							style="margin-top: 25px; font-size: 22px"
-						>
-							🏁 Lancer le jeu
-						</button>
-					</div>
-				</div>
-			</section>
-		</main>
-
-		<footer>
-			<p>Copyright © 2026 - Tous droits réservés</p>
-			<p>Made by Mattew, Stéphane, Batiste, Gabriel</p>
-		</footer>
-
-		<div id="qr-modal" class="modal-container" onclick="toggleQRCode()">
-			<div class="modal-content" onclick="event.stopPropagation()">
-				<span class="close-modal" onclick="toggleQRCode()"
-					>&times;</span
-				>
-				<h2>Scannez pour rejoindre</h2>
-				<img
-					src="../Image/qr-code.png"
-					alt="QR Code Chair or Die"
-					class="qr-image-big"
-				/>
-				<p>Ou tapez : <strong>192.168.0.50</strong></p>
-			</div>
-		</div>
-
-		<div
-			id="pseudo-modal"
-			class="modal-container"
-			onclick="closePseudoModal()"
-		>
-			<div class="modal-content" onclick="event.stopPropagation()">
-				<span class="close-modal" onclick="closePseudoModal()"
-					>&times;</span
-				>
-				<h2>🎮 Rejoindre la Room</h2>
-				<input
-					type="text"
-					id="room-code-input"
-					placeholder="CODE (4 lettres)"
-					class="pseudo-input"
-					style="
-						text-transform: uppercase;
-						text-align: center;
-						font-weight: bold;
-						font-size: 22px;
-						letter-spacing: 5px;
-					"
-					maxlength="4"
-				/>
-				<br />
-				<input
-					type="text"
-					id="pseudo-input"
-					placeholder="Ton Pseudo..."
-					class="pseudo-input"
-					style="text-align: center"
-				/>
-				<br />
-				<button
-					class="btn-main btn-join"
-					style="margin-top: 20px"
-					onclick="ConfirmJoin()"
-				>
-					Valider et Jouer
-				</button>
-			</div>
-		</div>
-
-		<button id="stop-game-btn" onclick="StopGame()">
-			❌ Quitter le jeu
-		</button>
-	</body>
+        <button id="stop-game-btn" onclick="StopGame()">❌ Quitter le jeu</button>
+        <button id="debug-replay" onclick="DebugReplay()" style="position: fixed; bottom: 20px; left: 20px; background: #9b59b6; color: white; border: 3px solid white; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 10px; z-index: 99999; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            🔄 DEBUG REPLAY
+        </button>
+    </body>
 </html>
