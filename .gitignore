@@ -1,0 +1,28 @@
+# --- COMPOSER ---
+# On ne suit JAMAIS le dossier vendor, les autres feront "composer install"
+/vendor/
+composer.phar
+
+# --- SYSTÈME & IDE ---
+# Fichiers de configuration de VS Code ou autres éditeurs
+.vscode/
+.idea/
+*.swp
+*.log
+.DS_Store
+Thumbs.db
+
+# --- XAMPP / PHP ---
+# Fichiers temporaires ou de session si tu en génères
+php_errors.log
+sessions/
+/temp/
+
+# --- FICHIERS DE CONFIGURATION SENSIBLES ---
+# Si tu crées un fichier .env pour tes accès base de données plus tard
+.env
+config.local.php
+
+# --- EXCEPTION ---
+# On veut garder composer.json et composer.lock car ils disent 
+# quelles versions installer, donc on ne les ignore PAS.

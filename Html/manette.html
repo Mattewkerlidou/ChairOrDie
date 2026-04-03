@@ -1,56 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manette - Chair or Die</title>
-    <link rel="stylesheet" href="../CSS/manette.css?v=26">
-</head>
-<body class="controller-body">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+		<title>Manette - Chair or Die</title>
+		<link rel="stylesheet" href="../CSS/manette.css?v=31" />
+	</head>
+	<body class="controller-body">
+		<div id="portrait-warning">
+			<h2>🔄 Tourne ton téléphone</h2>
+			<p>Le jeu se joue en mode paysage !</p>
+		</div>
 
-    <div id="portrait-warning">
-        <h2>🔄 Tourne ton téléphone</h2>
-        <p>Le jeu se joue en mode paysage !</p>
-    </div>
+		<div id="lobby-ui">
+			<h2>Salon d'attente</h2>
+			<p>Choisis ton Slime pour la partie :</p>
 
-    <div id="lobby-ui">
-        <h2>Salon d'attente</h2>
-        <p>Choisis ton Slime pour la partie :</p>
-        <div class="slime-selector">
-            <img src="../sprite/caractere/red/slime_front.png" class="slime-btn selected" id="slime-red" onclick="chooseSlime('red')">
-            <img src="../sprite/caractere/yellow/slime_front.png" class="slime-btn" id="slime-yellow" onclick="chooseSlime('yellow')">
-        </div>
-        <p class="waiting-text">En attente du lancement par l'Hôte...</p>
-    </div>
+			<div class="slime-selector" id="slime-selector-container">
+				<p style="font-size: 12px; color: #ccc">
+					Chargement des personnages...
+				</p>
+			</div>
 
-    <div id="game-ui" style="display: none;">
-        
-        <div id="debug-progress-container">
-            <div id="debug-progress-bar"></div>
-        </div>
-        <div id="debug-text">FARM: 0%</div>
+			<p class="waiting-text">En attente du lancement par l'Hôte...</p>
+		</div>
 
-        <div id="left-touch-zone">
-            <div id="joystick-hint">
-                <div class="hint-ring"></div>
-                <span>Joystick</span>
-            </div>
-        </div>
+		<div id="game-ui" style="display: none">
+			<div id="debug-progress-container">
+				<div id="debug-progress-bar"></div>
+			</div>
+			<div id="debug-text">FARM: 0%</div>
 
-        <div id="joystick-base">
-            <div id="joystick-stick"></div>
-        </div>
+			<div id="left-touch-zone">
+				<div id="joystick-hint">
+					<div class="hint-ring"></div>
+					<span>Joystick</span>
+				</div>
+			</div>
 
-        <button id="btn-item" class="item-box">
-            <span id="item-empty-text">Vide</span>
-            <img id="item-sprite" src="" alt="Objet" style="display: none; width: 80%; height: 80%; object-fit: contain;">
-        </button>
+			<div id="joystick-base">
+				<div id="joystick-stick"></div>
+			</div>
 
-        <button id="btn-sit" class="action-btn sit-btn">🪑 S'ASSEOIR</button>
-        <button id="btn-highlight" class="small-btn">💡 HIGHLIGHT</button>
-    </div>
+			<button id="btn-item" class="item-box">
+				<span id="item-empty-text">Vide</span>
+				<img
+					id="item-sprite"
+					src=""
+					alt="Objet"
+					style="
+						display: none;
+						width: 80%;
+						height: 80%;
+						object-fit: contain;
+					"
+				/>
+			</button>
 
-    <script src="../JavaScript/manette.js?v=27"></script>
-    
-</body>
+			<button id="btn-sit" class="action-btn sit-btn">
+				🪑 S'ASSEOIR
+			</button>
+		</div>
+
+		<script src="../JavaScript/manette.js?v=31"></script>
+	</body>
 </html>
