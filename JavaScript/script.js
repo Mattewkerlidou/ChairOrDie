@@ -1,5 +1,5 @@
 // =========================================
-// LOGIQUE UI (Version 39 - Sans Particules & Anti-Scroll)
+// LOGIQUE UI (Version avec Animation du Gagnant)
 // =========================================
 window.toggleQRCode = () => {
 	document.getElementById("qr-modal").classList.toggle("active");
@@ -49,7 +49,6 @@ window.OpenLobby = function () {
 	document.getElementById("lobby-screen").style.display = "block";
 	window.updateLobbyUI();
 
-	// On essaie de passer en plein écran
 	if (document.documentElement.requestFullscreen) {
 		document.documentElement
 			.requestFullscreen()
@@ -58,28 +57,30 @@ window.OpenLobby = function () {
 };
 
 // =========================================
-// BOUCLE DE JEU & COUPLE
+// BOUCLE DE JEU & TEMPS DYNAMIQUE
 // =========================================
 window.musicTimer = null;
 window.roundForceEndTimer = null;
 window.chairsAreSpawned = false;
 
+window.roundEndTime = 0;
+window.roundDuration = 0;
+const MAX_ROUND_DURATION = 20000; // 20 secondes max
+const MIN_ROUND_DURATION = 3000;  // 3 secondes min
+
 window.StartActualGame = function () {
 	window.gameState = "PLAYING";
 
-	// Disparition du lobby
 	document.getElementById("lobby-screen").style.display = "none";
 	const bgAnim = document.querySelector(".bg-animated");
 	if (bgAnim) bgAnim.style.display = "none";
 
-	// Cacher les éventuelles navbars HTML
 	document
 		.querySelectorAll("nav, header, .navbar, #navbar, .nav-bar")
 		.forEach((el) => {
 			el.style.display = "none";
 		});
 
-	// 🛑 VEROUILLAGE TOTAL DES SCROLLBARS
 	document.documentElement.style.overflow = "hidden";
 	document.body.style.overflow = "hidden";
 	document.body.style.margin = "0";
@@ -91,7 +92,6 @@ window.StartActualGame = function () {
 			.catch((e) => console.log("Plein écran ignoré:", e));
 	}
 
-	// Le plateau prend l'écran complet
 	const card = document.querySelector(".game-card");
 	if (card) {
 		card.style.position = "fixed";
@@ -133,15 +133,19 @@ window.startNewRound = function () {
 			p.element.classList.remove("sitting");
 			p.element.style.left = window.innerWidth / 2 + "px";
 			p.element.style.top = window.innerHeight / 2 + "px";
-
 			p.element.style.filter = "none";
+			
 			const iceElem = p.element.querySelector(".ice-effect");
 			if (iceElem) iceElem.remove();
+            
+            const shieldElem = p.element.querySelector(".shield-effect");
+            if (shieldElem) shieldElem.remove();
 		}
 
 		p.hasItem = false;
 		p.itemLimitReached = false;
 		p.isFrozen = false;
+        p.isShielded = false;
 
 		if (window.socket && window.socket.readyState === WebSocket.OPEN) {
 			window.socket.send(
@@ -154,34 +158,41 @@ window.startNewRound = function () {
 		}
 	});
 
-	if (inLife.length >= 2) {
-		const shuffled = inLife.sort(() => 0.5 - Math.random());
-		const p1 = shuffled[0];
-		const p2 = shuffled[1];
-		[p1, p2].forEach((p) => {
-			window.playersOnScreen[p].hasItem = true;
-			window.playersOnScreen[p].itemLimitReached = true;
-			window.playersOnScreen[p].currentItem = "COEUR";
-			if (window.socket && window.socket.readyState === WebSocket.OPEN)
-				window.socket.send(
-					JSON.stringify({
-						type: "GIVE_ITEM",
-						pseudo: p,
-						joueurCible: p,
-						item: "COEUR",
-					}),
-				);
-		});
-	}
-
 	if (typeof window.playRandomMusic === "function") window.playRandomMusic();
 
-	window.musicTimer = setTimeout(
-		() => {
-			window.triggerChairs();
-		},
-		Math.floor(Math.random() * 10000) + 5000,
-	);
+	window.roundDuration = Math.floor(Math.random() * 10000) + 5000; 
+	window.roundEndTime = Date.now() + window.roundDuration;
+
+	window.checkMusicTimeout();
+};
+
+window.checkMusicTimeout = function () {
+	if (window.gameState !== "PLAYING" || window.chairsAreSpawned) return;
+
+	let timeLeft = window.roundEndTime - Date.now();
+
+	if (timeLeft <= 0) {
+		window.triggerChairs();
+	} else {
+		window.musicTimer = setTimeout(() => window.checkMusicTimeout(), 100);
+	}
+};
+
+window.modifyRoundTime = function (percent) {
+	if (window.chairsAreSpawned) return;
+
+	let change = window.roundDuration * percent;
+	window.roundDuration += change;
+
+	if (window.roundDuration > MAX_ROUND_DURATION) {
+        change = change - (window.roundDuration - MAX_ROUND_DURATION);
+        window.roundDuration = MAX_ROUND_DURATION;
+    } else if (window.roundDuration < MIN_ROUND_DURATION) {
+        change = change + (MIN_ROUND_DURATION - window.roundDuration);
+        window.roundDuration = MIN_ROUND_DURATION;
+    }
+
+    window.roundEndTime += change;
 };
 
 window.triggerChairs = function () {
@@ -197,10 +208,14 @@ window.triggerChairs = function () {
 	window.roundForceEndTimer = setTimeout(() => window.endRound(), 10000);
 };
 
+// =========================================
+// FIN DE MANCHE & GAGNANT
+// =========================================
 window.endRound = function () {
 	clearTimeout(window.roundForceEndTimer);
 	let survivors = [];
 	let dead = [];
+	
 	Object.values(window.playersOnScreen).forEach((p) => {
 		if (p.element && p.element.classList.contains("sitting"))
 			survivors.push(p.pseudo);
@@ -221,18 +236,62 @@ window.endRound = function () {
 			);
 	});
 
-	if (survivors.length === 1) alert("🏆 GAGNANT : " + survivors[0]);
-	else if (survivors.length === 0) alert("💀 MATCH NUL");
-	else setTimeout(() => window.startNewRound(), 3000);
+	if (survivors.length === 1) {
+        // 🔥 Lancement de l'écran du Grand Gagnant
+        window.displayGrandWinner(survivors[0]);
+    } else if (survivors.length === 0) {
+        alert("💀 MATCH NUL");
+        setTimeout(() => window.startNewRound(), 3000);
+    } else {
+        setTimeout(() => window.startNewRound(), 3000);
+    }
 };
 
+window.displayGrandWinner = function(name) {
+    if (typeof window.stopMusic === "function") window.stopMusic();
+    
+    const overlay = document.getElementById('winner-overlay');
+    const nameDisplay = document.getElementById('winner-name');
+    
+    if (nameDisplay && overlay) {
+        nameDisplay.innerText = name;
+        overlay.style.display = 'flex';
+    }
+
+    // Lancement des confettis
+    for (let i = 0; i < 100; i++) {
+        createConfetti();
+    }
+};
+
+function createConfetti() {
+    const colors = ['#e9c46a', '#f4a261', '#e74c3c', '#3498db', '#2ecc71'];
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.top = '-10px';
+    
+    const size = Math.random() * 10 + 5 + 'px';
+    confetti.style.width = size;
+    confetti.style.height = size;
+    
+    const duration = Math.random() * 3 + 2;
+    confetti.style.animationDuration = duration + 's';
+    
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), duration * 1000);
+}
+
+// =========================================
+// GESTION DU MENU & REJOUER
+// =========================================
 window.StopGame = function () {
 	window.gameState = "MENU";
 	clearTimeout(window.musicTimer);
 	clearTimeout(window.roundForceEndTimer);
 	if (typeof window.stopMusic === "function") window.stopMusic();
 
-	// NOUVEAU : On rend les scrollbars au navigateur si le joueur retourne au menu
 	document.documentElement.style.overflow = "auto";
 	document.body.style.overflow = "auto";
 
@@ -246,29 +305,4 @@ window.StopGame = function () {
 	} else {
 		location.reload();
 	}
-};
-
-window.DebugReplay = function () {
-	clearTimeout(window.musicTimer);
-	clearTimeout(window.roundForceEndTimer);
-	if (typeof window.stopMusic === "function") window.stopMusic();
-	window.chairsOnScreen.forEach((c) => {
-		if (c.element) c.element.remove();
-	});
-	window.chairsOnScreen = [];
-	const players = Object.keys(window.playersOnScreen);
-	window.generateItemPool(players.length);
-	players.forEach((p) => {
-		if (!document.getElementById("player-" + p)) window.spawnPlayer(p);
-		if (window.socket && window.socket.readyState === WebSocket.OPEN)
-			window.socket.send(
-				JSON.stringify({
-					type: "ACTION",
-					pseudo: p,
-					action: "RESET_DEBUG",
-					joueurCible: p,
-				}),
-			);
-	});
-	window.startNewRound();
 };

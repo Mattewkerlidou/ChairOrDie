@@ -382,3 +382,73 @@ main {
 	transform: translate(-50%, -50%) scale(1.1);
 	filter: brightness(0.6);
 }
+
+
+#winner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 20000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.winner-content {
+    animation: winnerPop 0.8s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+.winner-title {
+    font-size: 50px;
+    color: #e9c46a;
+    text-shadow: 0 0 20px rgba(233, 196, 106, 0.8);
+    margin-bottom: 10px;
+}
+
+#winner-name {
+    font-size: 80px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(to right, #fff, #f4a261, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: shine 3s linear infinite;
+}
+
+.winner-trophy {
+    font-size: 100px;
+    margin: 20px 0;
+    animation: rotateTrophy 2s ease-in-out infinite;
+}
+
+@keyframes winnerPop {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shine {
+    to { background-position: 200% center; }
+}
+
+@keyframes rotateTrophy {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.2); }
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}

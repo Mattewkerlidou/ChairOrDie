@@ -1,5 +1,5 @@
 // =========================================
-// VARIABLES GLOBALES DU JEU (Version 36)
+// VARIABLES GLOBALES DU JEU (Version 43 - Objets Fix)
 // =========================================
 window.socket = null;
 window.playersOnScreen = {};
@@ -42,10 +42,11 @@ window.generateItemPool = function (nbJoueurs) {
 	window.itemPool = [];
 	let nbChaise = Math.max(1, Math.floor(nbJoueurs * 0.15));
 	let nbMarteau = Math.max(1, Math.floor(nbJoueurs * 0.15));
-	let nbEclair = Math.max(1, Math.floor(nbJoueurs * 0.2));
+	let nbEclair = Math.max(1, Math.floor(nbJoueurs * 0.20));
 	let nbEscargot = Math.max(1, Math.floor(nbJoueurs * 0.15));
 	let nbFreeze = Math.max(1, Math.floor(nbJoueurs * 0.15));
 	let nbPause = Math.max(1, Math.floor(nbJoueurs * 0.05));
+    let nbCoeur = Math.max(1, Math.floor(nbJoueurs * 0.15)); // Ajout du bouclier
 
 	for (let i = 0; i < nbChaise; i++) window.itemPool.push("CHAISE_PLUS");
 	for (let i = 0; i < nbMarteau; i++) window.itemPool.push("MARTEAU");
@@ -53,6 +54,7 @@ window.generateItemPool = function (nbJoueurs) {
 	for (let i = 0; i < nbEscargot; i++) window.itemPool.push("ESCARGOT");
 	for (let i = 0; i < nbFreeze; i++) window.itemPool.push("FREEZE");
 	for (let i = 0; i < nbPause; i++) window.itemPool.push("PAUSE");
+    for (let i = 0; i < nbCoeur; i++) window.itemPool.push("COEUR");
 
 	for (let i = window.itemPool.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
@@ -64,7 +66,7 @@ window.generateItemPool = function (nbJoueurs) {
 };
 
 // =========================================
-// MÉCANIQUES DE JEU (SPRITES OPTIMISÉS GPU)
+// MÉCANIQUES DE JEU
 // =========================================
 window.generateRoomCode = function () {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -185,6 +187,7 @@ window.initWebSocket = function () {
 						itemLimitReached: false,
 						currentItem: null,
 						isFrozen: false,
+                        isShielded: false
 					};
 					if (window.gameState === "PLAYING")
 						window.spawnPlayer(data.pseudo);
@@ -276,62 +279,82 @@ window.initWebSocket = function () {
 				if (itemUsed === "PAUSE") {
 					if (typeof window.triggerChairs === "function")
 						window.triggerChairs();
-				} else if (itemUsed === "FREEZE") {
+				} 
+                else if (itemUsed === "ECLAIR") {
+                    // +10% de temps
+                    if (typeof window.modifyRoundTime === "function") window.modifyRoundTime(0.10);
+                    document.body.style.filter = "brightness(2)";
+                    setTimeout(() => { document.body.style.filter = "none"; }, 150);
+                } 
+                else if (itemUsed === "ESCARGOT") {
+                    // -10% de temps
+                    if (typeof window.modifyRoundTime === "function") window.modifyRoundTime(-0.10);
+                    document.body.style.filter = "hue-rotate(90deg) saturate(0.5)";
+                    setTimeout(() => { document.body.style.filter = "none"; }, 300);
+                } 
+                else if (itemUsed === "COEUR") {
+                    // Création du bouclier
+                    pData.isShielded = true;
+                    const shield = document.createElement("div");
+                    shield.innerText = "❤️";
+                    shield.className = "shield-effect";
+                    shield.style.position = "absolute";
+                    shield.style.top = "-45px";
+                    shield.style.width = "100%";
+                    shield.style.textAlign = "center";
+                    shield.style.fontSize = "25px";
+                    pData.element.appendChild(shield);
+                }
+                else if (itemUsed === "FREEZE") {
 					const myX = parseFloat(pData.element.style.left);
 					const myY = parseFloat(pData.element.style.top);
 					const freezeRadius = 250;
 
-					pData.element.style.transform =
-						"translate(-50%, -50%) scale(1.5)";
+					pData.element.style.transform = "translate(-50%, -50%) scale(1.5)";
 					setTimeout(() => {
-						if (
-							pData.element &&
-							!pData.element.classList.contains("sitting")
-						)
-							pData.element.style.transform =
-								"translate(-50%, -50%) scale(1)";
+						if (pData.element && !pData.element.classList.contains("sitting"))
+							pData.element.style.transform = "translate(-50%, -50%) scale(1)";
 					}, 200);
 
 					Object.values(window.playersOnScreen).forEach((victim) => {
-						if (
-							victim.pseudo !== data.pseudo &&
-							!victim.element.classList.contains("sitting")
-						) {
+						if (victim.pseudo !== data.pseudo && !victim.element.classList.contains("sitting")) {
 							const vX = parseFloat(victim.element.style.left);
 							const vY = parseFloat(victim.element.style.top);
-							if (
-								Math.sqrt((myX - vX) ** 2 + (myY - vY) ** 2) <=
-								freezeRadius
-							) {
-								victim.isFrozen = true;
-								victim.element.style.filter =
-									"sepia(1) hue-rotate(180deg) saturate(3) brightness(0.8)";
-								const ice = document.createElement("div");
-								ice.innerText = "❄️";
-								ice.className = "ice-effect";
-								ice.style.position = "absolute";
-								ice.style.top = "-40px";
-								ice.style.width = "100%";
-								ice.style.textAlign = "center";
-								ice.style.fontSize = "30px";
-								ice.style.zIndex = "20";
-								victim.element.appendChild(ice);
+							
+                            if (Math.sqrt((myX - vX) ** 2 + (myY - vY) ** 2) <= freezeRadius) {
+                                // Si la victime a un bouclier, on le détruit au lieu de geler !
+                                if (victim.isShielded) {
+                                    victim.isShielded = false;
+                                    const s = victim.element.querySelector(".shield-effect");
+                                    if (s) s.remove();
+                                } else {
+                                    victim.isFrozen = true;
+                                    victim.element.style.filter = "sepia(1) hue-rotate(180deg) saturate(3) brightness(0.8)";
+                                    const ice = document.createElement("div");
+                                    ice.innerText = "❄️";
+                                    ice.className = "ice-effect";
+                                    ice.style.position = "absolute";
+                                    ice.style.top = "-40px";
+                                    ice.style.width = "100%";
+                                    ice.style.textAlign = "center";
+                                    ice.style.fontSize = "30px";
+                                    ice.style.zIndex = "20";
+                                    victim.element.appendChild(ice);
 
-								setTimeout(() => {
-									victim.isFrozen = false;
-									if (victim.element) {
-										victim.element.style.filter = "none";
-										const iceElem =
-											victim.element.querySelector(
-												".ice-effect",
-											);
-										if (iceElem) iceElem.remove();
-									}
-								}, 1500);
+                                    setTimeout(() => {
+                                        victim.isFrozen = false;
+                                        if (victim.element) {
+                                            victim.element.style.filter = "none";
+                                            const iceElem = victim.element.querySelector(".ice-effect");
+                                            if (iceElem) iceElem.remove();
+                                        }
+                                    }, 1500);
+                                }
 							}
 						}
 					});
-				} else if (itemUsed === "MARTEAU") {
+				} 
+                else if (itemUsed === "MARTEAU") {
 					const myX = parseFloat(pData.element.style.left);
 					const myY = parseFloat(pData.element.style.top);
 					let targetChair = null;
@@ -339,9 +362,7 @@ window.initWebSocket = function () {
 
 					for (let chair of window.chairsOnScreen) {
 						if (chair.isBroken) continue;
-						const dist = Math.sqrt(
-							(myX - chair.x) ** 2 + (myY - chair.y) ** 2,
-						);
+						const dist = Math.sqrt((myX - chair.x) ** 2 + (myY - chair.y) ** 2);
 						if (dist < minDistance) {
 							minDistance = dist;
 							targetChair = chair;
@@ -357,57 +378,35 @@ window.initWebSocket = function () {
 						hammerDiv.style.top = targetChair.y - 40 + "px";
 						hammerDiv.style.width = "64px";
 						hammerDiv.style.height = "64px";
-						hammerDiv.style.backgroundImage =
-							"url('../sprite/items/hammer_vertical.png')";
+						hammerDiv.style.backgroundImage = "url('../sprite/items/hammer_vertical.png')";
 						hammerDiv.style.backgroundSize = "contain";
 						hammerDiv.style.backgroundRepeat = "no-repeat";
 						hammerDiv.style.zIndex = "60";
-						document
-							.getElementById("game-arena")
-							.appendChild(hammerDiv);
+						document.getElementById("game-arena").appendChild(hammerDiv);
 
 						setTimeout(() => {
-							hammerDiv.style.backgroundImage =
-								"url('../sprite/items/hammer_diagonal.png')";
+							hammerDiv.style.backgroundImage = "url('../sprite/items/hammer_diagonal.png')";
 						}, 100);
 						setTimeout(() => {
-							hammerDiv.style.backgroundImage =
-								"url('../sprite/items/hammer_horizontal.png')";
-							targetChair.element.style.backgroundImage =
-								"url('../sprite/items/broken_chair.png')";
+							hammerDiv.style.backgroundImage = "url('../sprite/items/hammer_horizontal.png')";
+							targetChair.element.style.backgroundImage = "url('../sprite/items/broken_chair.png')";
 
 							if (targetChair.isOccupied) {
 								Object.values(window.playersOnScreen).forEach(
 									(p) => {
 										if (
-											p.element.classList.contains(
-												"sitting",
-											) &&
-											Math.abs(
-												parseFloat(
-													p.element.style.left,
-												) - targetChair.x,
-											) < 5 &&
-											Math.abs(
-												parseFloat(
-													p.element.style.top,
-												) - targetChair.y,
-											) < 5
+											p.element.classList.contains("sitting") &&
+											Math.abs(parseFloat(p.element.style.left) - targetChair.x) < 5 &&
+											Math.abs(parseFloat(p.element.style.top) - targetChair.y) < 5
 										) {
-											p.element.classList.remove(
-												"sitting",
-											);
-											p.element.style.left =
-												targetChair.x + 80 + "px";
+											p.element.classList.remove("sitting");
+											p.element.style.left = targetChair.x + 80 + "px";
 											p.isFrozen = true;
-											p.element.style.filter =
-												"grayscale(1)";
+											p.element.style.filter = "grayscale(1)";
 
 											setTimeout(() => {
 												p.isFrozen = false;
-												if (p.element)
-													p.element.style.filter =
-														"none";
+												if (p.element) p.element.style.filter = "none";
 											}, 2000);
 										}
 									},
@@ -428,12 +427,7 @@ window.initWebSocket = function () {
 		if (data.type === "MOVE" && window.playersOnScreen[data.pseudo]) {
 			const pData = window.playersOnScreen[data.pseudo];
 
-			if (
-				!pData ||
-				!pData.element ||
-				pData.element.classList.contains("sitting") ||
-				pData.isFrozen
-			)
+			if (!pData || !pData.element || pData.element.classList.contains("sitting") || pData.isFrozen)
 				return;
 
 			let curX = parseFloat(pData.element.style.left) + data.x * 10;
@@ -446,38 +440,22 @@ window.initWebSocket = function () {
 			if (Math.abs(data.x) > 0.1 || Math.abs(data.y) > 0.1) {
 				let dir =
 					Math.abs(data.x) > Math.abs(data.y)
-						? data.x > 0
-							? "right"
-							: "left"
-						: data.y > 0
-							? "front"
-							: "back";
+						? data.x > 0 ? "right" : "left"
+						: data.y > 0 ? "front" : "back";
 				if (pData.element.dataset.direction !== dir) {
 					pData.element.dataset.direction = dir;
 					["front", "back", "left", "right"].forEach((d) => {
-						const img = document.getElementById(
-							`img-${data.pseudo}-${d}`,
-						);
-						if (img)
-							img.style.display = d === dir ? "block" : "none";
+						const img = document.getElementById(`img-${data.pseudo}-${d}`);
+						if (img) img.style.display = d === dir ? "block" : "none";
 					});
 				}
 			}
 		}
 
 		// --- S'ASSEOIR ---
-		if (
-			data.type === "ACTION" &&
-			data.action === "SIT" &&
-			window.playersOnScreen[data.pseudo]
-		) {
+		if (data.type === "ACTION" && data.action === "SIT" && window.playersOnScreen[data.pseudo]) {
 			const pData = window.playersOnScreen[data.pseudo];
-			if (
-				!pData ||
-				!pData.element ||
-				pData.element.classList.contains("sitting") ||
-				pData.isFrozen
-			)
+			if (!pData || !pData.element || pData.element.classList.contains("sitting") || pData.isFrozen)
 				return;
 			if (!window.chairsAreSpawned) return;
 
@@ -498,50 +476,32 @@ window.initWebSocket = function () {
 
 					pData.element.dataset.direction = "front";
 					["front", "back", "left", "right"].forEach((d) => {
-						const img = document.getElementById(
-							`img-${data.pseudo}-${d}`,
-						);
-						if (img)
-							img.style.display =
-								d === "front" ? "block" : "none";
+						const img = document.getElementById(`img-${data.pseudo}-${d}`);
+						if (img) img.style.display = d === "front" ? "block" : "none";
 					});
 					break;
 				}
 			}
 
 			if (!seatFound) {
-				pData.element.style.filter =
-					"sepia(1) hue-rotate(-50deg) saturate(5)";
+				pData.element.style.filter = "sepia(1) hue-rotate(-50deg) saturate(5)";
 				setTimeout(() => {
-					if (
-						!pData.element.classList.contains("sitting") &&
-						!pData.isFrozen
-					)
+					if (!pData.element.classList.contains("sitting") && !pData.isFrozen)
 						pData.element.style.filter = "none";
 				}, 300);
 			} else {
-				const chaisesRestantes = window.chairsOnScreen.filter(
-					(c) => !c.isBroken,
-				);
-				if (
-					chaisesRestantes.filter((c) => c.isOccupied).length >=
-					chaisesRestantes.length
-				) {
-					if (typeof window.endRound === "function")
-						window.endRound();
+				const chaisesRestantes = window.chairsOnScreen.filter((c) => !c.isBroken);
+				if (chaisesRestantes.filter((c) => c.isOccupied).length >= chaisesRestantes.length) {
+					if (typeof window.endRound === "function") window.endRound();
 				}
 			}
 		}
 
-		if (
-			data.type === "PLAYER_LEFT" &&
-			window.playersOnScreen[data.pseudo]
-		) {
+		if (data.type === "PLAYER_LEFT" && window.playersOnScreen[data.pseudo]) {
 			if (window.playersOnScreen[data.pseudo].element)
 				window.playersOnScreen[data.pseudo].element.remove();
 			delete window.playersOnScreen[data.pseudo];
-			if (typeof window.updateLobbyUI === "function")
-				window.updateLobbyUI();
+			if (typeof window.updateLobbyUI === "function") window.updateLobbyUI();
 		}
 	};
 };

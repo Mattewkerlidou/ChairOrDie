@@ -91,6 +91,7 @@ body {
 	max-height: 40vh; /* Limite la hauteur pour le scroll */
 	overflow-y: auto; /* Active la scrollbar verticale */
 	padding: 10px;
+	touch-action: pan-y; /* 🔥 PERMET LE SCROLL VERTICAL ICI 🔥 */
 }
 
 /* Design de la scrollbar pour rester dans ton thème */
