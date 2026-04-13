@@ -452,3 +452,30 @@ main {
 @keyframes fall {
     to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
+
+#debug-timer {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #00ff00; /* Vert "Matrix" pour le debug */
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10000;
+    pointer-events: none; /* Pour cliquer à travers si besoin */
+    border: 1px solid #00ff00;
+    display: none; /* Caché par défaut */
+}
+
+/* On fait clignoter le chrono s'il reste moins de 3 secondes */
+@keyframes timerUrgent {
+    0%, 100% { color: #ff0000; border-color: #ff0000; }
+    50% { color: white; border-color: white; }
+}
+
+.urgent-timer {
+    animation: timerUrgent 0.5s infinite;
+}

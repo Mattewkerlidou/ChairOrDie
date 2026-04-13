@@ -19,7 +19,7 @@ class SocketHandler implements MessageComponentInterface {
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
-        echo "RECU BRUT : $msg\n";
+        //echo "RECU BRUT : $msg\n";
         $data = json_decode($msg);
         
         if (!$data || !isset($data->type)) return;

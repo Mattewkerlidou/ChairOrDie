@@ -160,9 +160,8 @@ socket.onmessage = (event) => {
 
 				if (data.item === "PAUSE") imgSrc = "stop.png";
 				else if (data.item === "FREEZE") imgSrc = "ice.png";
-				else if (data.item === "CHAISE_PLUS") imgSrc = "bench.png";
-				else if (data.item === "MARTEAU")
-					imgSrc = "hammer_diagonal.png";
+				else if (data.item === "CHAISE_PLUS") imgSrc = "one_up.png";
+				else if (data.item === "MARTEAU")imgSrc = "hammer_diagonal.png";
 				else if (data.item === "ESCARGOT") imgSrc = "snail.png";
 				else if (data.item === "COEUR") imgSrc = "heart.png";
 				else if (data.item === "ECLAIR") imgSrc = "lightning.png";

@@ -11,7 +11,7 @@
 	box-sizing: border-box;
 	user-select: none;
 	-webkit-user-select: none;
-	touch-action: none;
+	touch-action: none; /* Bloque tout par défaut... */
 }
 
 body.controller-body,
@@ -82,16 +82,25 @@ body {
 /* 🔥 LA SOLUTION POUR LA GRILLE ET LA SCROLLBAR EST ICI 🔥 */
 .slime-selector {
 	display: flex;
-	flex-wrap: wrap; /* Passe à la ligne si plus de place */
+	flex-wrap: wrap; 
 	justify-content: center;
-	gap: 20px; /* Espace entre les slimes */
+	gap: 20px; 
 	margin: 15px auto 25px auto;
 	width: 90%;
 	max-width: 500px;
-	max-height: 40vh; /* Limite la hauteur pour le scroll */
-	overflow-y: auto; /* Active la scrollbar verticale */
+	max-height: 40vh; 
+	overflow-y: auto; 
 	padding: 10px;
-	touch-action: pan-y; /* 🔥 PERMET LE SCROLL VERTICAL ICI 🔥 */
+    
+	/* Autorise le glissement vertical sur la boîte */
+	touch-action: pan-y; 
+	/* Rend le scroll fluide sur iOS */
+	-webkit-overflow-scrolling: touch;
+}
+
+/* 🔥 NOUVEAU : On autorise aussi le scroll QUAND ON TOUCHE LES IMAGES ! 🔥 */
+.slime-selector * {
+	touch-action: pan-y;
 }
 
 /* Design de la scrollbar pour rester dans ton thème */
@@ -109,7 +118,7 @@ body {
 
 .slime-btn {
 	width: 80px;
-	height: 80px; /* Légèrement réduit pour bien rentrer dans la grille */
+	height: 80px; 
 	border: 4px solid transparent;
 	border-radius: 15px;
 	cursor: pointer;
@@ -136,15 +145,9 @@ body {
 }
 
 @keyframes pulse {
-	0% {
-		opacity: 0.5;
-	}
-	50% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0.5;
-	}
+	0% { opacity: 0.5; }
+	50% { opacity: 1; }
+	100% { opacity: 0.5; }
 }
 
 /* =========================================
@@ -234,9 +237,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	transition:
-		transform 0.1s,
-		box-shadow 0.1s;
+	transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .sit-btn {
@@ -269,21 +270,15 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow:
-		inset 0 0 20px rgba(0, 0, 0, 1),
-		0 6px 0 #000;
+	box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
 	cursor: pointer;
 	z-index: 30;
-	transition:
-		transform 0.1s,
-		box-shadow 0.1s;
+	transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .item-box:active {
 	transform: translateY(calc(-50% + 6px));
-	box-shadow:
-		inset 0 0 20px rgba(0, 0, 0, 1),
-		0 0px 0 #000;
+	box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 0px 0 #000;
 }
 
 #item-empty-text {
@@ -353,16 +348,12 @@ body {
 @keyframes itemFlashAnim {
 	0% {
 		background-color: #111111;
-		box-shadow:
-			inset 0 0 20px rgba(0, 0, 0, 1),
-			0 6px 0 #000;
+		box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
 		transform: translateY(-50%) scale(1);
 	}
 	10% {
 		background-color: #ffffff;
-		box-shadow:
-			0 0 40px #ffffff,
-			0 0 60px var(--jaune-solaire);
+		box-shadow: 0 0 40px #ffffff, 0 0 60px var(--jaune-solaire);
 		transform: translateY(-50%) scale(1.15);
 	}
 	50% {
@@ -372,9 +363,7 @@ body {
 	}
 	100% {
 		background-color: #111111;
-		box-shadow:
-			inset 0 0 20px rgba(0, 0, 0, 1),
-			0 6px 0 #000;
+		box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
 		transform: translateY(-50%) scale(1);
 	}
 }
