@@ -9,21 +9,22 @@
 			href="../Image/Favicon/favicon_io/favicon.ico"
 		/>
 
-		<link rel="stylesheet" href="../CSS/global.css?v=49" />
-		<link rel="stylesheet" href="../CSS/navbar.css?v=49" />
-		<link rel="stylesheet" href="../CSS/footer.css?v=49" />
-		<link rel="stylesheet" href="../CSS/index.css?v=49" />
+		<link rel="stylesheet" href="../CSS/global.css?v=64" />
+		<link rel="stylesheet" href="../CSS/navbar.css?v=64" />
+		<link rel="stylesheet" href="../CSS/footer.css?v=64" />
+		<link rel="stylesheet" href="../CSS/index.css?v=64" />
 
-		<script src="../JavaScript/item.js?v=49"></script>
-		<script src="../JavaScript/jeu.js?v=49"></script>
-		<script src="../JavaScript/script.js?v=49" defer></script>
+		<script src="../JavaScript/item.js?v=64"></script>
+		<script src="../JavaScript/jeu.js?v=64"></script>
+		<script src="../JavaScript/script.js?v=64" defer></script>
+		<script src="../JavaScript/qrcode.min.js"></script>
 	</head>
 	<body>
 		<header>
 			<nav>
-				<a href="index.html" class="logo-link"
-					><img src="../Image/logo1-Photoroom.png" alt="logo"
-				/></a>
+				<a href="index.html" class="logo-link">
+					<img src="../Image/logo1-Photoroom.png" alt="logo" />
+				</a>
 				<div class="nav-links">
 					<a href="index.html">Accueil</a><a href="Wiki.html">Wiki</a>
 				</div>
@@ -62,78 +63,26 @@
 						>
 					</div>
 
-					<div
-						id="lobby-screen"
-						style="
-							display: none;
-							position: relative;
-							z-index: 10;
-							width: 100%;
-							text-align: center;
-							color: white;
-						"
-					>
-						<h2
-							style="
-								font-size: 32px;
-								margin-top: 0;
-								margin-bottom: 5px;
-								text-transform: uppercase;
-							"
-						>
-							Salon d'attente
-						</h2>
+					<div id="lobby-screen">
+						<h2 class="lobby-title">Salon d'attente</h2>
 
-						<div
-							style="
-								background-color: rgba(255, 255, 255, 0.1);
-								padding: 10px 30px;
-								border-radius: 15px;
-								margin: 15px auto;
-								width: fit-content;
-								border: 3px solid #e9c46a;
-								box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-							"
-						>
-							<h1
-								style="
-									margin: 0;
-									font-size: 40px;
-									letter-spacing: 10px;
-									color: #f4a261;
-								"
-							>
+						<div class="room-code-container">
+							<h1 class="room-code-title">
 								CODE :
-								<span
-									id="display-room-code"
-									style="color: white"
-									>----</span
-								>
+								<span id="display-room-code">----</span>
 							</h1>
 						</div>
 
-						<div
-							style="
-								font-size: 22px;
-								color: #e9c46a;
-								margin-bottom: 20px;
-								font-weight: bold;
-							"
-						>
+						<div class="player-count-container">
 							Joueurs prêts :
-							<span
-								id="player-count"
-								style="color: white; font-size: 28px"
-								>0</span
-							>
+							<span id="player-count">0</span>
 							/ 100
 						</div>
 
 						<div id="player-list" class="lobby-list"></div>
 						<button
-							class="btn-main btn-join"
+							class="btn-main btn-join btn-start-game"
 							onclick="StartActualGame()"
-							style="margin-top: 25px; font-size: 22px"
 						>
 							🏁 Lancer le jeu
 						</button>
@@ -172,13 +121,6 @@
 					id="room-code-input"
 					placeholder="CODE (4 lettres)"
 					class="pseudo-input"
-					style="
-						text-transform: uppercase;
-						text-align: center;
-						font-weight: bold;
-						font-size: 22px;
-						letter-spacing: 5px;
-					"
 					maxlength="4"
 				/>
 				<br />
@@ -187,12 +129,10 @@
 					id="pseudo-input"
 					placeholder="Ton Pseudo..."
 					class="pseudo-input"
-					style="text-align: center"
 				/>
 				<br />
 				<button
-					class="btn-main btn-join"
-					style="margin-top: 20px"
+					class="btn-main btn-join btn-confirm-join"
 					onclick="ConfirmJoin()"
 				>
 					Valider et Jouer
@@ -203,34 +143,16 @@
 		<button id="stop-game-btn" onclick="StopGame()">
 			❌ Quitter le jeu
 		</button>
-		<button
-			id="debug-replay"
-			onclick="DebugReplay()"
-			style="
-				position: fixed;
-				bottom: 20px;
-				left: 20px;
-				background: #9b59b6;
-				color: white;
-				border: 3px solid white;
-				padding: 15px;
-				font-size: 18px;
-				font-weight: bold;
-				border-radius: 10px;
-				z-index: 99999;
-				cursor: pointer;
-				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-			"
-		>
-			🔄 DEBUG REPLAY
-		</button>
-		<div id="winner-overlay" style="display: none;">
-    	<div class="winner-content">
-        	<h1 class="winner-title">GRAND GAGNANT</h1>
-        	<div id="winner-name">NOM DU JOUEUR</div>
-        	<div class="winner-trophy">🏆</div>
-        	<button class="btn-main btn-join" onclick="location.reload()">REJOUER</button>
-    	</div>
-	</div>
+
+		<div id="winner-overlay">
+			<div class="winner-content">
+				<h1 class="winner-title">GRAND GAGNANT</h1>
+				<div id="winner-name">NOM DU JOUEUR</div>
+				<div class="winner-trophy">🏆</div>
+				<button class="btn-main btn-join" onclick="location.reload()">
+					REJOUER
+				</button>
+			</div>
+		</div>
 	</body>
 </html>

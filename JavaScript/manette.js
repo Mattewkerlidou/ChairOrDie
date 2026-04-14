@@ -1,5 +1,5 @@
 // =========================================
-// 1. CONNEXION ET SÉCURITÉ (Version 40)
+// 1. CONNEXION ET SÉCURITÉ (Version PROPRE)
 // =========================================
 const urlParams = new URLSearchParams(window.location.search);
 const pseudoChoisi = (urlParams.get("pseudo") || "Anonyme").trim();
@@ -15,11 +15,6 @@ let myItem = null;
 let farmProgress = 0;
 let hasReceivedItemThisRound = false;
 const FARM_TARGET = 10000;
-
-// On cache les logs dans la vraie console
-function debugLog(text) {
-	console.log(text);
-}
 
 socket.onopen = () => {
 	socket.send(
@@ -37,6 +32,10 @@ fetch("../bin/get_colors.php")
 		const container = document.getElementById("slime-selector-container");
 		if (container && colors.length > 0) {
 			container.innerHTML = "";
+
+			// On laisse le scroll s'exprimer
+			container.style.overflowY = "auto";
+
 			currentColor = colors[0];
 
 			colors.forEach((color, index) => {
@@ -49,7 +48,7 @@ fetch("../bin/get_colors.php")
 			});
 		}
 	})
-	.catch((error) => debugLog("❌ Erreur chargement sprites : " + error));
+	.catch((error) => console.log("❌ Erreur chargement sprites : " + error));
 
 window.chooseSlime = function (color) {
 	currentColor = color;
@@ -70,7 +69,7 @@ window.chooseSlime = function (color) {
 	}
 };
 
-function resetItemUI(showFarmBar) {
+function resetItemUI() {
 	myItem = null;
 	farmProgress = 0;
 	const itemText = document.getElementById("item-empty-text");
@@ -84,27 +83,11 @@ function resetItemUI(showFarmBar) {
 		itemText.style.textShadow = "none";
 	}
 	if (itemImg) itemImg.style.display = "none";
-
-	if (showFarmBar) {
-		document.getElementById("debug-progress-container").style.display =
-			"block";
-		document.getElementById("debug-text").style.display = "block";
-		document.getElementById("debug-progress-bar").style.width = "0%";
-		document.getElementById("debug-text").innerText = "FARM : 0%";
-		document.getElementById("debug-text").style.color = "white";
-	} else {
-		document.getElementById("debug-progress-container").style.display =
-			"none";
-		document.getElementById("debug-text").style.display = "none";
-	}
 }
 
 socket.onmessage = (event) => {
 	const data = JSON.parse(event.data);
 	const cible = (data.joueurCible || data.pseudo || "").trim();
-
-	if (data.type !== "MOVE" && data.type !== "ITEM_PROGRESS")
-		debugLog("📥 REÇU: " + data.type);
 
 	if (data.type === "HOST_ACCEPT_JOIN" && cible === pseudoChoisi) {
 		isReady = true;
@@ -122,11 +105,14 @@ socket.onmessage = (event) => {
 		document.getElementById("lobby-ui").style.display = "none";
 		document.getElementById("game-ui").style.display = "block";
 		hasReceivedItemThisRound = false;
-		resetItemUI(true);
+		resetItemUI();
 	}
 
 	if (data.type === "HOST_REJECT_JOIN" && cible === pseudoChoisi) {
-		alert("❌ Connexion refusée.");
+		alert(
+			"❌ Connexion refusée : " +
+				(data.message ? data.message : "Erreur"),
+		);
 		window.location.href = "../Html/index.html";
 	}
 	if (data.type === "GAME_CLOSED") {
@@ -141,17 +127,12 @@ socket.onmessage = (event) => {
 
 	if (data.type === "GIVE_ITEM") {
 		if (cible === pseudoChoisi) {
-			debugLog(`🎁 OBJET: ${data.item}`);
 			myItem = data.item;
 			hasReceivedItemThisRound = true;
 
 			const btnItem = document.getElementById("btn-item");
 			const itemText = document.getElementById("item-empty-text");
 			const itemImg = document.getElementById("item-sprite");
-
-			document.getElementById("debug-progress-container").style.display =
-				"none";
-			document.getElementById("debug-text").style.display = "none";
 
 			if (itemText) itemText.style.display = "none";
 			if (itemImg) {
@@ -161,7 +142,8 @@ socket.onmessage = (event) => {
 				if (data.item === "PAUSE") imgSrc = "stop.png";
 				else if (data.item === "FREEZE") imgSrc = "ice.png";
 				else if (data.item === "CHAISE_PLUS") imgSrc = "one_up.png";
-				else if (data.item === "MARTEAU")imgSrc = "hammer_diagonal.png";
+				else if (data.item === "MARTEAU")
+					imgSrc = "hammer_diagonal.png";
 				else if (data.item === "ESCARGOT") imgSrc = "snail.png";
 				else if (data.item === "COEUR") imgSrc = "heart.png";
 				else if (data.item === "ECLAIR") imgSrc = "lightning.png";
@@ -177,31 +159,18 @@ socket.onmessage = (event) => {
 		}
 	}
 
-	if (data.type === "ROLL_FAILED" && cible === pseudoChoisi) {
-		const txt = document.getElementById("debug-text");
-		txt.innerText = "❌ RATÉ !";
-		txt.style.color = "#e74c3c";
-		setTimeout(() => {
-			if (!hasReceivedItemThisRound) {
-				txt.innerText = "FARM : 0%";
-				txt.style.color = "white";
-			}
-		}, 1000);
-	}
-
 	if (
 		data.type === "ACTION" &&
 		data.action === "RESET_DEBUG" &&
 		cible === pseudoChoisi
 	) {
 		hasReceivedItemThisRound = false;
-		resetItemUI(true);
+		resetItemUI();
 	}
 };
 
 socket.onclose = () => {
 	isReady = false;
-	debugLog("❌ DÉCONNECTÉ");
 };
 
 function sendMove(x, y) {
@@ -276,17 +245,6 @@ if (touchZone) {
 					if (!hasReceivedItemThisRound) {
 						let forceJoystick = Math.sqrt(dx * dx + dy * dy);
 						farmProgress += forceJoystick;
-						let pct = Math.min(
-							100,
-							(farmProgress / FARM_TARGET) * 100,
-						);
-						document.getElementById(
-							"debug-progress-bar",
-						).style.width = Math.floor(pct) + "%";
-
-						const txt = document.getElementById("debug-text");
-						if (txt.innerText !== "❌ RATÉ !")
-							txt.innerText = "FARM : " + Math.floor(pct) + "%";
 
 						if (farmProgress >= FARM_TARGET) {
 							farmProgress = 0;
@@ -333,7 +291,7 @@ const handleItem = (e) => {
 	e.preventDefault();
 	if (myItem !== null) {
 		sendAction("USE_ITEM");
-		resetItemUI(false);
+		resetItemUI();
 	}
 };
 if (btnItem) {

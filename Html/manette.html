@@ -7,7 +7,7 @@
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 		/>
 		<title>Manette - Chair or Die</title>
-		<link rel="stylesheet" href="../CSS/manette.css?v=49" />
+		<link rel="stylesheet" href="../CSS/manette.css?v=64" />
 	</head>
 	<body class="controller-body">
 		<div id="portrait-warning">
@@ -20,19 +20,16 @@
 			<p>Choisis ton Slime pour la partie :</p>
 
 			<div class="slime-selector" id="slime-selector-container">
-				<p style="font-size: 12px; color: #ccc">
-					Chargement des personnages...
-				</p>
+				<p class="loading-text">Chargement des personnages...</p>
 			</div>
 
 			<p class="waiting-text">En attente du lancement par l'Hôte...</p>
 		</div>
 
-		<div id="game-ui" style="display: none">
+		<div id="game-ui">
 			<div id="debug-progress-container">
 				<div id="debug-progress-bar"></div>
 			</div>
-			<div id="debug-text">FARM: 0%</div>
 
 			<div id="left-touch-zone">
 				<div id="joystick-hint">
@@ -46,18 +43,10 @@
 			</div>
 
 			<button id="btn-item" class="item-box">
-				<span id="item-empty-text">Vide</span>
-				<img
-					id="item-sprite"
-					src=""
-					alt="Objet"
-					style="
-						display: none;
-						width: 80%;
-						height: 80%;
-						object-fit: contain;
-					"
-				/>
+				<span id="item-empty-text"
+					><img src="/sprite/items/default.png" alt=""
+				/></span>
+				<img id="item-sprite" src="" alt="Objet" />
 			</button>
 
 			<button id="btn-sit" class="action-btn sit-btn">
@@ -65,6 +54,6 @@
 			</button>
 		</div>
 
-		<script src="../JavaScript/manette.js?v=50"></script>
+		<script src="../JavaScript/manette.js?v=64"></script>
 	</body>
 </html>

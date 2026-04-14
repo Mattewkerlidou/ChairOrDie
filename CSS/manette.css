@@ -11,7 +11,6 @@
 	box-sizing: border-box;
 	user-select: none;
 	-webkit-user-select: none;
-	touch-action: none; /* Bloque tout par défaut... */
 }
 
 body.controller-body,
@@ -23,6 +22,7 @@ body {
 	overflow: hidden;
 	width: 100vw;
 	height: 100vh;
+	touch-action: none;
 }
 
 /* =========================================
@@ -55,7 +55,7 @@ body {
 }
 
 /* =========================================
-   SALON D'ATTENTE (CHOIX DU SLIME SUR TÉLÉPHONE)
+   SALON D'ATTENTE (CHOIX DU SLIME)
 ========================================= */
 #lobby-ui {
 	position: absolute;
@@ -79,31 +79,20 @@ body {
 	color: var(--jaune-solaire);
 }
 
-/* 🔥 LA SOLUTION POUR LA GRILLE ET LA SCROLLBAR EST ICI 🔥 */
 .slime-selector {
 	display: flex;
-	flex-wrap: wrap; 
+	flex-wrap: wrap;
 	justify-content: center;
-	gap: 20px; 
+	gap: 20px;
 	margin: 15px auto 25px auto;
 	width: 90%;
 	max-width: 500px;
-	max-height: 40vh; 
-	overflow-y: auto; 
+	max-height: 40vh;
+	overflow-y: auto;
 	padding: 10px;
-    
-	/* Autorise le glissement vertical sur la boîte */
-	touch-action: pan-y; 
-	/* Rend le scroll fluide sur iOS */
-	-webkit-overflow-scrolling: touch;
+	touch-action: pan-y !important;
 }
 
-/* 🔥 NOUVEAU : On autorise aussi le scroll QUAND ON TOUCHE LES IMAGES ! 🔥 */
-.slime-selector * {
-	touch-action: pan-y;
-}
-
-/* Design de la scrollbar pour rester dans ton thème */
 .slime-selector::-webkit-scrollbar {
 	width: 6px;
 }
@@ -118,7 +107,7 @@ body {
 
 .slime-btn {
 	width: 80px;
-	height: 80px; 
+	height: 80px;
 	border: 4px solid transparent;
 	border-radius: 15px;
 	cursor: pointer;
@@ -129,6 +118,7 @@ body {
 	background-color: rgba(255, 255, 255, 0.1);
 	padding: 10px;
 	object-fit: contain;
+	touch-action: pan-y !important;
 }
 
 .slime-btn.selected {
@@ -145,9 +135,15 @@ body {
 }
 
 @keyframes pulse {
-	0% { opacity: 0.5; }
-	50% { opacity: 1; }
-	100% { opacity: 0.5; }
+	0% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0.5;
+	}
 }
 
 /* =========================================
@@ -157,6 +153,13 @@ body {
 	position: relative;
 	width: 100%;
 	height: 100%;
+	display: none; /* 🔥 Masqué au départ, affiché par script.js */
+}
+
+/* Styles extraits du HTML pour le texte de chargement */
+.loading-text {
+	font-size: 12px;
+	color: #ccc;
 }
 
 #left-touch-zone {
@@ -237,7 +240,9 @@ body {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	transition: transform 0.1s, box-shadow 0.1s;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
 }
 
 .sit-btn {
@@ -270,15 +275,21 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
+	box-shadow:
+		inset 0 0 20px rgba(0, 0, 0, 1),
+		0 6px 0 #000;
 	cursor: pointer;
 	z-index: 30;
-	transition: transform 0.1s, box-shadow 0.1s;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
 }
 
 .item-box:active {
 	transform: translateY(calc(-50% + 6px));
-	box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 0px 0 #000;
+	box-shadow:
+		inset 0 0 20px rgba(0, 0, 0, 1),
+		0 0px 0 #000;
 }
 
 #item-empty-text {
@@ -286,6 +297,14 @@ body {
 	font-size: 14px;
 	font-weight: bold;
 	text-transform: uppercase;
+}
+
+/* Styles extraits du HTML pour le sprite de l'objet */
+#item-sprite {
+	display: none;
+	width: 80%;
+	height: 80%;
+	object-fit: contain;
 }
 
 .small-btn {
@@ -307,53 +326,21 @@ body {
 }
 
 /* =========================================
-   BARRE DE PROGRESSION (DEBUG FARM)
-========================================= */
-#debug-progress-container {
-	position: absolute;
-	top: 15px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 250px;
-	height: 12px;
-	background-color: rgba(0, 0, 0, 0.6);
-	border: 2px solid var(--jaune-solaire);
-	border-radius: 10px;
-	z-index: 50;
-	overflow: hidden;
-}
-
-#debug-progress-bar {
-	width: 0%;
-	height: 100%;
-	background-color: #2ecc71;
-	transition: width 0.1s linear;
-}
-
-#debug-text {
-	position: absolute;
-	top: 32px;
-	left: 50%;
-	transform: translateX(-50%);
-	color: white;
-	font-size: 14px;
-	font-weight: bold;
-	z-index: 50;
-	text-shadow: 1px 1px 2px black;
-}
-
-/* =========================================
    ANIMATION FLASH POUR LE NOUVEL OBJET
 ========================================= */
 @keyframes itemFlashAnim {
 	0% {
 		background-color: #111111;
-		box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
+		box-shadow:
+			inset 0 0 20px rgba(0, 0, 0, 1),
+			0 6px 0 #000;
 		transform: translateY(-50%) scale(1);
 	}
 	10% {
 		background-color: #ffffff;
-		box-shadow: 0 0 40px #ffffff, 0 0 60px var(--jaune-solaire);
+		box-shadow:
+			0 0 40px #ffffff,
+			0 0 60px var(--jaune-solaire);
 		transform: translateY(-50%) scale(1.15);
 	}
 	50% {
@@ -363,7 +350,9 @@ body {
 	}
 	100% {
 		background-color: #111111;
-		box-shadow: inset 0 0 20px rgba(0, 0, 0, 1), 0 6px 0 #000;
+		box-shadow:
+			inset 0 0 20px rgba(0, 0, 0, 1),
+			0 6px 0 #000;
 		transform: translateY(-50%) scale(1);
 	}
 }
